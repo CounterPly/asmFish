@@ -1860,12 +1860,8 @@ end virtual
 		jz   .NotOppBishop
 		or   r8, r9
 		jnz   .NotOppBishop
-		_blsr   rcx, r11, r8
 		mov   eax, 46
-		neg   rcx
-		sbb   ecx, ecx
-		and   ecx, 31-9
-		add   ecx, 9
+		mov  ecx, 31
 		cmp   edi, (BishopValueMg shl 16) + BishopValueMg
 		cmove   eax, ecx
 		jmp   .ScaleFactorDone
