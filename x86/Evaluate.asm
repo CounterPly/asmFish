@@ -7,15 +7,15 @@ LongRangedBishop    = ( 22 shl 16) + (  0)
 RookOnPawn          = (  8 shl 16) + ( 24)
 TrappedRook         = ( 92 shl 16) + (  0)
 WeakQueen           = ( 50 shl 16) + ( 10)
-CloseEnemies        = (  7 shl 16) + (  0)
+CloseEnemies        = (  8 shl 16) + (  0)
 PawnlessFlank       = ( 20 shl 16) + ( 80)
-ThreatBySafePawn    = (175 shl 16) + (168)
+ThreatBySafePawn    = (165 shl 16) + (133)
 ThreatByRank        = ( 16 shl 16) + (  3)
 Hanging             = ( 52 shl 16) + ( 30)
-WeakUnopposedPawn   = (  5 shl 16) + ( 25)
-ThreatByPawnPush    = ( 47 shl 16) + ( 26)
+WeakUnopposedPawn   = ( 5 shl  16) + ( 26)
+ThreatByPawnPush    = ( 49 shl 16) + ( 30)
 SliderOnQueen       = ( 42 shl 16) + ( 21)
-HinderPassedPawn    = (  8 shl 16) + (  1)
+HinderPassedPawn    = (  5 shl 16) + ( -1)
 TrappedBishopA1H1   = ( 50 shl 16) + ( 50)
 
 LazyThreshold = 1500
@@ -167,21 +167,21 @@ macro EvalPieces Us, Pt
 	Outpost1	  = ((36 shl 16) + (12))
 	KingAttackWeight  = 77
 	MobilityBonus	  equ MobilityBonus_Knight
-	KingProtector_Pt  = ((-3 shl 16) + (-5))
+	KingProtector_Pt  = ((-4 shl 16) + (-6))
   else if Pt = Bishop
 	Outpost0	  = (( 9 shl 16) + (2))
 	Outpost1	  = ((15 shl 16) + (5))
 	KingAttackWeight  = 55
 	MobilityBonus	  equ MobilityBonus_Bishop
-        KingProtector_Pt  = ((-4 shl 16) + (-3))
+        KingProtector_Pt  = ((-6 shl 16) + (-3))
   else if Pt = Rook
 	KingAttackWeight  = 44
 	MobilityBonus	  equ MobilityBonus_Rook
-	KingProtector_Pt  = ((-3 shl 16) + (0))
+	KingProtector_Pt  = ((-1 shl 16) + (0))
   else if Pt = Queen
 	KingAttackWeight  = 10
 	MobilityBonus	  equ MobilityBonus_Queen
-	KingProtector_Pt  = ((-1 shl 16) + (1))
+	KingProtector_Pt  = ((0 shl 16) + (2))
   else
     err	'bad Pt	in Eval	Pieces'
   end if
@@ -261,11 +261,6 @@ NoKingRing:
 		addsub   esi, eax
 		; r10 = mob
 
-		lea   eax, [8*r8]
-		movzx   eax, byte[SquareDistance+8*rax+r14]
-		imul   eax, KingProtector_Pt
-		addsub   esi, eax
-
 
   if Pt	= Knight | Pt =	Bishop
 
@@ -306,6 +301,12 @@ OutpostElse:
 		test   rdx, qword[.ei.attackedBy+8*(8*Us+Pawn)]
 		cmovnz   esi, ecx
 OutpostDone:
+
+; score -= KingProtector[Pt == BISHOP] * distance(s, pos.square<KING>(Us));
+		lea   eax, [8*r8]
+		movzx   eax, byte[SquareDistance+8*rax+r14]
+		imul   eax, KingProtector_Pt
+		addsub   esi, eax
 
 	; Penalty for pawns on the same color square as the bishop
     if Pt = Bishop
@@ -531,22 +532,23 @@ KingSafetyDoneRet:
 
 		jb   AllDone
 		imul  edi, dword[.ei.kingAttackersWeight+4*Them]
-		imul  eax, dword[.ei.kingAdjacentZoneAttacksCount+4*Them], 102
+		imul  eax, dword[.ei.kingAdjacentZoneAttacksCount+4*Them], 64
 		add   edi, eax
 
 		_popcnt rax, r9, rcx
-		imul    eax, 191
+		imul    eax, 183
 		add     edi, eax
 		test    PiecesThem, qword[rbp+Pos.typeBB+8*Queen]
-		lea     eax, [rdi-848]
+		lea     eax, [rdi-860]
 		cmovz   edi, eax
 
 	; the following	does edi += - 9*mg_value(score)/8 + 40
 		lea   ecx, [rsi+0x08000]
-		add   edi, 40
+		add   edi, 17
 		sar   ecx, 16
-		lea   edx, [9*rcx]
-		lea   eax, [9*rcx+7]
+		imul  ecx, 7
+		mov   edx, ecx
+		lea   eax, [rcx+7]
 		cmovs edx, eax
 		sar   edx, 3
 		sub   edi, edx ; edi =	kingDanger
@@ -620,7 +622,7 @@ KingSafetyDoneRet:
 		or    rdx, r9
 
 		_popcnt rax, rdx, rcx
-		imul  eax, 143
+		imul  eax, 122
 		add   edi, eax
 
 	; Compute the king danger score and subtract it from the evaluation
@@ -866,12 +868,6 @@ macro ShelterStorm Us
 		; r8d = ourRank
 		; esi = ourRank + 1
 
-; if (ourRank || theirRank)
-		test rdi, rdi
-		jnz  @1f
-		test r8d, r8d
-		jz  @f
-
 ; safety -=  StormDanger[ ourRank && (ourRank == theirRank - 1) ? BlockedByPawn : Unblocked ][d][theirRank];
 	@1:
 		test  r8d, r8d ; (ourRank = true)
@@ -920,8 +916,8 @@ macro EvalThreats Us
   local ThreatMinorLoop, ThreatMinorDone, ThreatRookLoop, ThreatRookDone
   local ThreatMinorSkipPawn, ThreatRookSkipPawn
 
-        ThreatByKing0 = (( 3 shl 16) + ( 65))
-        ThreatByKing1 = (( 9 shl 16) + (145))
+        ThreatByKing0 = (( 30 shl 16) + ( 62))
+        ThreatByKing1 = ((  -9 shl 16) + (160))
 
   if Us	= White
 	;addsub		equ add
@@ -1249,8 +1245,7 @@ NextPawn:
 		mov   rax, qword[ForwardBB+8*(64*Us+r8)]
 		add   r8d, Up
 	; r8d = blockSq
-		mov   rdx, AttackedByThem
-		or   rdx, PiecesThem
+		mov   rdx, PiecesThem
 		and   rax, rdx
 		_popcnt   rax, rax, r10
 		imul   eax, HinderPassedPawn
@@ -1779,25 +1774,27 @@ end virtual
 		sub   edi, r9d
 		neg   edi
 
-		movzx   eax, byte[rbp+Pos.pieceList+16*(8*White+King)]
+		movzx   r11d, byte[rbp+Pos.pieceList+16*(8*White+King)]
 		movzx   ecx, byte[rbp+Pos.pieceList+16*(8*Black+King)]
-		and   eax, 0111000b
-		and   ecx, 0111000b
-		sub   eax, ecx
-		cdq
-		xor   eax, edx
-		sub   eax, edx
-		sub   r8d, eax
+		and   r11d, 56
+		and   ecx, 56
+		shr   r11d, 3
+		shr   ecx, 3
+		sub   r11d, ecx
+		abs   r11
 
 		movzx   eax, byte[rbp+Pos.pieceList+16*(8*White+King)]
 		movzx   ecx, byte[rbp+Pos.pieceList+16*(8*Black+King)]
 		and   eax, 7
 		and   ecx, 7
 		sub   eax, ecx
-		cdq
-		xor   eax, edx
-		sub   eax, edx
-		lea   eax, [r8+8*rax]
+		abs  rax
+
+		sub  eax, r11d
+		lea  eax, [rax+2*rax]
+		shl  eax, 2
+		add  eax, r8d
+
 	; eax = initiative
 
 		cmp   eax, edi
@@ -1814,13 +1811,12 @@ end virtual
 
 		movsx   r12d, si ; r12 = temp (score)
 		lea   r13d, [r12-1] ; r13d = [score-1]
-		shr   r13d, 31 ; isolates top bit,
+		shr   r13d, 31 ; isolates top bit
 
 	; r13d = 1 or 0 where 1 = black's winning and 0 = white's winning
 
 		movzx ecx, byte[r15+MaterialEntry.scalingFunction+r13]
 		movzx eax, byte[r15+MaterialEntry.factor+r13]
-		movzx edx, byte[r15+MaterialEntry.gamePhase]
 		add   esi, 0x08000
 		sar   esi, 16
 		test  ecx, ecx
@@ -1835,7 +1831,6 @@ end virtual
 
 ; Check for Scale Factor
 		cmp   eax, SCALE_FACTOR_NONE
-		movzx  edx, byte[r15+MaterialEntry.gamePhase]
 		movzx  ecx, byte[r15+MaterialEntry.factor+r13]
 		cmove  eax, ecx
 
@@ -1854,29 +1849,29 @@ end virtual
 		mov   r11, qword[rbp+Pos.typeBB+8*Pawn]
 		mov   rcx, DarkSquares
 		test   rcx, r10
-		jz   .NotOppBishop
+		mov  edx, 7
+		jz   @f
 		mov   rcx, LightSquares
 		test   rcx, r10
-		jz   .NotOppBishop
+		jz   @f
 		or   r8, r9
-		jnz   .NotOppBishop
-		mov   eax, 46
-		mov  ecx, 31
+		jnz  @f
 		cmp   edi, (BishopValueMg shl 16) + BishopValueMg
-		cmove   eax, ecx
+		mov  edx, 2
+		jne  @f
+		mov   eax, 31
 		jmp   .ScaleFactorDone
 
-.NotOppBishop:
+	@@:
 		and   r11, qword[rbp+Pos.typeBB+8*r13]
 		_popcnt   rcx, r11, r9 ;  pos.count<PAWN>(strongSide)
-		imul  ecx, 7
+		imul  ecx, edx
 		add   ecx, 40
 		cmp   eax, ecx
 		cmovg eax, ecx
 
 .ScaleFactorDone:
 	; eax = scale factor
-	; edx = phase
 	; esi = mg_score(score)
 	; r12d = eg_value(score)
 	; adjust score for side to move
@@ -1885,6 +1880,7 @@ end virtual
   ;Value v =  mg_value(score) * int(ei.me->game_phase())
   ;         + eg_value(score) * int(PHASE_MIDGAME - ei.me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
   ;v /= int(PHASE_MIDGAME);
+		movzx edx, byte[r15+MaterialEntry.gamePhase] ; edx = phase
 		mov   ecx, dword[rbp+Pos.sideToMove]
 		mov   edi, 128
 		sub   edi, edx

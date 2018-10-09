@@ -121,7 +121,7 @@ end macro
 
 macro UpdateCaptureStats move, captures, captureCnt, bonusW, absbonus
 	; clobbers rax, rcx, rdx, r8, r9
-	; it also might clobber rsi
+	; it also might clobber rsi, r11
   local BonusTooBig, NextCapture, Return
 
            imul  bonusW, absbonus, 32
