@@ -15,8 +15,8 @@ macro SetDefault val*, sym*
   end if
 end macro
 
-SetDefault 0, DEBUG
-SetDefault 0, VERBOSE
+SetDefault 1, DEBUG
+SetDefault 1, VERBOSE
 SetDefault 0, PROFILE
 
 SetDefault 1, USE_BOOK

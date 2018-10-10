@@ -158,19 +158,19 @@ local Lower
 		add   x, 'A'
 end macro
 
-;macro print description,number
+macro bigintprint description,number
 ;{
-;   display description
-;   value=number
-;   pos=100000
-;   repeat 6
-;      digit=value/pos
-;      value=value-(digit*pos)
-;      pos=pos/10
-;      display ('0'+digit)
-;   end repeat
-;   display $d,$a
-;}
+   display description
+   value=number
+   pos=1000000000000000000
+   repeat 19
+      digit=value/pos
+      value=value-(digit*pos)
+      pos=pos/10
+      display ('0'+digit)
+   end repeat
+   display $d,$a
+end macro;}
 
 ; use this macro if you are too lazy to touch beforehand the required amount of stack
 ;  for functions that need more than 4K of stack space
