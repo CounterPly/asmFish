@@ -183,26 +183,25 @@ MovePick_QUIET_GEN:
 		cmp   r8, r15
 		jb   .SortLoop
 .SortDone:
-
 		lea   rdx, [MovePick_QUIETS]
 		mov   qword[rbx+State.stage], rdx
 
 MovePick_QUIETS:
 		test  esi, esi
 		js  .WhileDone
-            @1:
+    @@:
 		mov  eax, dword[r14 + ExtMove.move]
 		cmp  r14, r15
 		jae  .WhileDone
 		add  r14, sizeof.ExtMove
 		cmp  eax, dword[rbx + State.ttMove]
-		 je  @1b
+		 je  @b
 		cmp  eax, dword[rbx + State.mpKillers + 4*0]
-		 je  @1b
+		 je  @b
 		cmp  eax, dword[rbx + State.mpKillers + 4*1]
-		 je  @1b
+		 je  @b
 		cmp  eax, dword[rbx + State.countermove]
-		 je  @1b
+		 je  @b
 		ret
 
 	     calign   16, MovePick_BAD_CAPTURES

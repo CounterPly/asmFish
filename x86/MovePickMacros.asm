@@ -286,21 +286,20 @@ end macro
 
 
 macro ScoreQuiets start, ender
-  local cmh1, cmh2, cmh4, history_get_c
+  local contHistory_0, contHistory_1, contHistory_3, mainHistory
   local Loop, Done, TestLoop
 
-	cmh1 = r9
-	cmh2 = r10
-	cmh4 = r11
+	mainHistory   = r8
+	contHistory_0 = r9
+	contHistory_1 = r10
+	contHistory_3 = r11
 
-		mov   cmh1, qword[rbx-1*sizeof.State+State.contHistory]
-		mov   cmh2, qword[rbx-2*sizeof.State+State.contHistory]
-		mov   cmh4, qword[rbx-4*sizeof.State+State.contHistory]
+		mov   contHistory_0, qword[rbx-1*sizeof.State+State.contHistory]
+		mov   contHistory_1, qword[rbx-2*sizeof.State+State.contHistory]
+		mov   contHistory_3, qword[rbx-4*sizeof.State+State.contHistory]
 		mov   r8d, dword[rbp+Pos.sideToMove]
 		shl   r8d, 12+2
 		add   r8, qword[rbp+Pos.history]
-
-	history_get_c equ r8
 
 		cmp   start, ender
 		jae   Done
@@ -309,7 +308,7 @@ Loop:
 		mov   eax, ecx
 		mov   edx, ecx
 		and   eax, 64*64-1
-		mov   eax, dword[history_get_c+4*rax]
+		mov   eax, dword[mainHistory+4*rax]
 		shr   edx, 6
 		lea   start, [start+sizeof.ExtMove]
 		and   ecx, 63
@@ -317,9 +316,9 @@ Loop:
 	      movzx   edx, byte[rbp+Pos.board+rdx]
 		shl   edx, 6
 		add   edx, ecx
-		add   eax, dword[cmh1+4*rdx]
-		add   eax, dword[cmh2+4*rdx]
-		add   eax, dword[cmh4+4*rdx]
+		add   eax, dword[contHistory_0+4*rdx]
+		add   eax, dword[contHistory_1+4*rdx]
+		add   eax, dword[contHistory_3+4*rdx]
 		mov   dword[start-1*sizeof.ExtMove+ExtMove.value], eax
 		cmp   start, ender
 		 jb   Loop
@@ -328,34 +327,62 @@ end macro
 
 
 macro ScoreEvasions start, ender
-  local history_get_c
+  local contHistory_0, mainHistory
   local WhileLoop, Normal, Special, Done, Capture
 
+	mainHistory   = rdi
+	contHistory_0 = r9
+
+		mov   contHistory_0, qword[rbx-1*sizeof.State+State.contHistory]
 		mov   edi, dword[rbp+Pos.sideToMove]
 		shl   edi, 12+2
-		add   rdi, qword[rbp+Pos.history]
-
-	history_get_c equ rdi
+		add   mainHistory, qword[rbp+Pos.history]
 
 		cmp   start, ender
 		jae   Done
 WhileLoop:
 		mov   ecx, dword[start+ExtMove.move]
-		mov   r10d, ecx 	; r10d = move
+		mov   r10d, ecx ; r10d = move
 		mov   r8d, ecx
 		shr   r8d, 6
 		and   r8d, 63
 		and   ecx, 63
 		lea   start, [start+sizeof.ExtMove]
-	      movzx   ecx, byte[rbp+Pos.board+rcx]	; ecx = to piece
-	      movzx   edx, byte[rbp+Pos.board+r8]	; edx = from piece
+		movzx   ecx, byte[rbp+Pos.board+rcx]	; ecx = to piece
+		movzx   edx, byte[rbp+Pos.board+r8]	; edx = from piece
 		cmp   r10d, MOVE_TYPE_EPCAP shl 12
 		jae   Special
-	       test   ecx, ecx
+		test   ecx, ecx
 		jnz   Capture
 Normal:
 		and   r10d, 64*64-1
-		mov   eax, dword[history_get_c+4*r10]
+		mov   eax, dword[mainHistory+4*r10]
+		shr   edx, 6
+		lea  start, [start+sizeof.ExtMove]
+		and   edx, 63
+		shl  edx, 6
+		add  edx, ecx
+		add   eax, dword[contHistory_0+4*rdx]
+
+
+		; add   eax, dword[contHistory_0]
+		; xor  rdx, rdx
+		; xor  r11, r11
+		; xor  r9, r9
+		; xor  r8, r8
+		; xor  rcx, rcx
+
+		; mov   edx, dword[start+ExtMove.move]
+		; shr   edx, 6
+		; and   edx, 63
+		; movzx   edx, byte[rbp+Pos.board+rdx]
+		; shl   edx, 6
+		;
+		; mov  ecx, dword[start+ExtMove.move]
+		; and  ecx, 63
+		; add  edx, ecx
+		; add   eax, dword[contHistory_0+4*rdx]
+
 		mov   dword[start-1*sizeof.ExtMove+ExtMove.value], eax
 		cmp   start, ender
 		 jb   WhileLoop
