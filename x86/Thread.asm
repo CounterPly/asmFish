@@ -58,7 +58,7 @@ Thread_Create:
 	; init some thread data
 		xor   eax, eax
 		mov   byte[rbx+Thread.exit], al
-                mov   dword[rbx+Thread.resetCnt], eax   ; resetCnt is set to minimum in 
+                mov   dword[rbx+Thread.resetCnt], eax   ; resetCnt is set to minimum in
                 mov   dword[rbx+Thread.callsCnt], eax   ;  ThreadPool_StartThinking
 		mov   dword[rbx+Thread.idx], esi
 		mov   qword[rbx+Thread.numaNode], rdi
@@ -91,7 +91,7 @@ Thread_Create:
 		add   rax, sizeof.HistoryStats
 		mov   qword[rbx+Thread.rootPos.captureHistory], rax
 		add   rax, sizeof.CapturePieceToHistory
-		mov   qword[rbx+Thread.rootPos.counterMoves], rax
+		mov   qword[rbx+Thread.rootPos.contHistory], rax
 
 	; allocate pawn hash
 		mov   ecx, PAWN_HASH_ENTRY_COUNT*sizeof.PawnEntry
@@ -121,7 +121,7 @@ Thread_Create:
 		jnz   @1f
 	       call   Os_VirtualAllocNuma
 		mov   qword[r14+NumaNode.cmhTable], rax
-	@1:	
+	@1:
                 mov   qword[rbx+Thread.rootPos.counterMoveHistory], rax
 
 	; start the thread and wait for it to enter the idle loop
@@ -193,7 +193,7 @@ Thread_Delete:
 	       call   Os_VirtualFree
 		xor   eax, eax
 		mov   qword[rbx+Thread.rootPos.history], rax
-		mov   qword[rbx+Thread.rootPos.counterMoves], rax
+		mov   qword[rbx+Thread.rootPos.contHistory], rax
 
 	; destroy the vector of root moves
 		lea   rcx, [rbx+Thread.rootPos.rootMovesVec]

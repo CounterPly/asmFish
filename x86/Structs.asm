@@ -144,7 +144,7 @@ end if
  stateEnd	rq 1 ; the end of
  counterMoveHistory  rq 1	 ; these structs hold addresses
  history 	rq 1		 ; of tables used by the search
- counterMoves	rq 1		 ;
+ contHistory	rq 1		 ;
  captureHistory rq 1
  materialTable	rq 1		 ;
  pawnTable	rq 1		 ;
@@ -181,7 +181,7 @@ struct State
 ; Stack struct
 _stack_start rb 0
  pv		rq 1
- counterMoves	rq 1
+ contHistory	rq 1
  currentMove	 rd 1
  excludedMove	 rd 1
  killers	 rd 2

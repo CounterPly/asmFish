@@ -1,24 +1,24 @@
 
-macro UpdateCmStats ss, offset, bonus32, absbonus, t1
+macro UpdateContinuationHistories ss, offset, bonus32, absbonus, t1
 	; bonus32 is 32*bonus
 	; absbonus is abs(bonus)
 	; clobbers rax, rcx, rdx, t1
   local over1, over2, over3
-	     Assert   b, absbonus, 324, 'assertion abs(bonus)<324 failed in UpdateCmStats'
+	     Assert   b, absbonus, 324, 'assertion abs(bonus)<324 failed in UpdateContinuationHistories'
 
-		mov   t1, qword[ss-1*sizeof.State+State.counterMoves]
+		mov   t1, qword[ss-1*sizeof.State+State.contHistory]
 		cmp   dword[ss-1*sizeof.State+State.currentMove], 1
 		 jl   over1
 	apply_bonus   (t1+4*(offset)), bonus32, absbonus, 936
 over1:
 
-		mov   t1, qword[ss-2*sizeof.State+State.counterMoves]
+		mov   t1, qword[ss-2*sizeof.State+State.contHistory]
 		cmp   dword[ss-2*sizeof.State+State.currentMove], 1
 		 jl   over2
 	apply_bonus   (t1+4*(offset)), bonus32, absbonus, 936
 over2:
 
-		mov   t1, qword[ss-4*sizeof.State+State.counterMoves]
+		mov   t1, qword[ss-4*sizeof.State+State.contHistory]
 		cmp   dword[ss-4*sizeof.State+State.currentMove], 1
 		 jl   over3
 	apply_bonus   (t1+4*(offset)), bonus32, absbonus, 936
@@ -53,7 +53,7 @@ DontUpdateKillers:
 
 		cmp   dword[rbx-1*sizeof.State+State.currentMove], 1
 		 jl   DontUpdateOpp
-		mov   r8, qword[rbp+Pos.counterMoves]
+		mov   r8, qword[rbp+Pos.contHistory]
 		mov   dword[r8+4*prevOffset], move
 DontUpdateOpp:
 
@@ -77,7 +77,7 @@ DontUpdateOpp:
 	      movzx   eax, byte[rbp+Pos.board+rax]
 		shl   eax, 6
 		add   r9d, eax
-      UpdateCmStats   (rbx-0*sizeof.State), r9, bonus32, absbonus, r8
+      UpdateContinuationHistories   (rbx-0*sizeof.State), r9, bonus32, absbonus, r8
 
 
   match =0, quiets
@@ -107,7 +107,7 @@ NextQuiet:
 
 	apply_bonus   r8, bonus32, absbonus, 324
 
-      UpdateCmStats   (rbx-0*sizeof.State), r9, bonus32, absbonus, r8
+      UpdateContinuationHistories   (rbx-0*sizeof.State), r9, bonus32, absbonus, r8
 
 		add   esi, 1
 		cmp   esi, quietsCnt
@@ -177,6 +177,3 @@ NextCapture:
 BonusTooBig:
 Return:
 end macro
-
-
-

@@ -96,10 +96,10 @@ end if
 		lea   ecx, [rax + 1]
 		mov   dword[.moveCount], 2
 		mov   dword[.bestMove], edx
-		mov   dword[rbx+State.currentMove], edx
+		mov   dword[rbx+State.currentMove], edx ; dword[rbx+State.contHistory] | ss->contHistory
 		mov   byte[rbx + 1*sizeof.State + State.ply], cl
 
-	; check for instant draw or max ply
+	;  // Check for an immediate draw or maximum ply reached
 		movzx   edx, word[rbx+State.rule50]
 		movzx   rcx, word[rbx+State.pliesFromNull]
 		mov   r8, qword[rbx+State.key]
@@ -262,7 +262,7 @@ end if
 		jg    @f
 		xor   edi, edi
 		jmp   .MovePickNoTTMove
-            @@:
+	@@:
 		call   Move_IsPseudoLegal
 		test   rax, rax
 		cmovz   edi, eax
@@ -273,6 +273,11 @@ end if
 
 	     calign   8
 .MovePickLoop:
+
+contHistory1  = (rbx-1*sizeof.State+State.contHistory)
+contHistory2  = (rbx-2*sizeof.State+State.contHistory)
+contHistory4  = (rbx-4*sizeof.State+State.contHistory)
+
 		xor   esi, esi
 	GetNextMove
 		mov   dword[.move], eax

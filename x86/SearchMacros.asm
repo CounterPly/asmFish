@@ -163,7 +163,7 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		mov   dword[.bestMove],	eax
 		mov   dword[rbx+1*sizeof.State+State.excludedMove], eax
 		mov   dword[rbx+0*sizeof.State+State.currentMove], eax
-		mov   qword[rbx+0*sizeof.State+State.counterMoves], rcx
+		mov   qword[rbx+0*sizeof.State+State.contHistory], rcx
 		mov   qword[rbx+2*sizeof.State+State.killers], rax
 		mov   dword[rbx + 2*sizeof.State + State.statScore], eax
 
@@ -451,7 +451,7 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		mov   eax, CmhDeadOffset
 		add   rax, qword[rbp+Pos.counterMoveHistory]
 		mov   dword[rbx+State.currentMove], MOVE_NULL
-		mov   qword[rbx+State.counterMoves], rax
+		mov   qword[rbx+State.contHistory], rax
 
 		mov   eax, dword[.evalu]
 		sub   eax, dword[.beta]
@@ -636,7 +636,7 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		add   eax, ecx
 		shl   eax, 2+4+6
 		add   rax, qword[rbp+Pos.counterMoveHistory]
-		mov   qword[rbx+State.counterMoves], rax
+		mov   qword[rbx+State.contHistory], rax
 
 		mov   ecx, dword[.move]
 		call   Move_GivesCheck
@@ -745,17 +745,19 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 	; Also, in the case of a tt miss, tte points to junk but must be used anyways.
 	; We reload the data in .ltte for its use in .singularExtensionNode.
 
+	contHistory1  = (rbx-1*sizeof.State+State.contHistory)
+	contHistory2  = (rbx-2*sizeof.State+State.contHistory)
+	contHistory4  = (rbx-4*sizeof.State+State.contHistory)
+
 		mov   rax, qword[.tte]
 		mov   rax, qword[rax]
 		mov   qword[.ltte], rax
-.CMH  equ (rbx-1*sizeof.State+State.counterMoves)
-.FMH  equ (rbx-2*sizeof.State+State.counterMoves)
-.FMH2 equ (rbx-4*sizeof.State+State.counterMoves)
+
 	; initialize move pick
 		mov   ecx, dword[.ttMove]
 		mov   edx, dword[.depth]
 		mov   dword[rbx+State.depth], edx
-		mov   rdi, qword[rbp+Pos.counterMoves]
+		mov   rdi, qword[rbp+Pos.contHistory]
 		mov   eax, dword[rbx-1*sizeof.State+State.currentMove]
 		and   eax, 63
 		  movzx   edx, byte[rbp+Pos.board+rax]
@@ -1020,9 +1022,10 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		jnz   .MovePickLoop
 		sub   edi, dword[.reduction]
 	; edi = lmrDepth
+
 	; Countermoves based pruning
-		mov   r8, qword[.CMH]
-		mov   r9, qword[.FMH]
+		mov   r8, qword[contHistory1]
+		mov   r9, qword[contHistory2]
 		lea   r11, [8*r14]
 		lea   r11, [8*r11+r13]
 		mov   eax, dword[r8+4*r11]
@@ -1096,7 +1099,7 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		shl   eax, 2+4+6
 		add   rax, qword[rbp+Pos.counterMoveHistory]
 		mov   dword[rbx+State.currentMove], ecx
-		mov   qword[rbx+State.counterMoves], rax
+		mov   qword[rbx+State.contHistory], rax
 		xor   eax, eax
 		xor   edx, edx
 		cmp   byte[.captureOrPromotion], 0
@@ -1179,9 +1182,9 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		mov   ecx, dword[.move]
 		and   ecx, 64*64-1
 		mov   edx, dword[.moved_piece_to_sq]
-		mov   r9, qword[.CMH-1*sizeof.State]
-		mov   r10, qword[.FMH-1*sizeof.State]
-		mov   r11, qword[.FMH2-1*sizeof.State]
+		mov    r9, qword[contHistory1-1*sizeof.State]
+		mov   r10, qword[contHistory2-1*sizeof.State]
+		mov   r11, qword[contHistory4-1*sizeof.State]
 		mov   eax, dword[rbp+Pos.sideToMove]
 		xor   eax, 1
 		shl   eax, 12+2
@@ -1494,7 +1497,7 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		imul   r11d, r10d, -32
 		cmp   r10d, 324
 		jae   .20TTStore
-		UpdateCmStats   (rbx-1*sizeof.State), r15, r11d, r10d, r8
+		UpdateContinuationHistories   (rbx-1*sizeof.State), r15, r11d, r10d, r8
 		jmp   .20TTStore
 
 .20Mate:
@@ -1524,7 +1527,7 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		imul   r11d, r10d, 32
 		cmp   r10d,	324
 		jae   .20TTStore
-		UpdateCmStats   (rbx-1*sizeof.State), r15, r11d, r10d, r8
+		UpdateContinuationHistories   (rbx-1*sizeof.State), r15, r11d, r10d, r8
 
 .20TTStore:
 	; edi = bestValue
@@ -1644,7 +1647,7 @@ Display	2, "Search returning %i0%n"
 	       imul   r11d,	r10d, -32
 		cmp   r10d,	324
 		jae   .Return
-  UpdateCmStats	  (rbx-1*sizeof.State), r15, r11d, r10d, r8
+  UpdateContinuationHistories	  (rbx-1*sizeof.State), r15, r11d, r10d, r8
 		mov   eax, edi
 		jmp   .Return
 .ReturnTTValue_Penalty:
@@ -1669,7 +1672,7 @@ Display	2, "Search returning %i0%n"
 		shl   eax, 6
 		add   r9d, eax
 	; r9 = offset in cm table
-	  UpdateCmStats   (rbx-0*sizeof.State),	r9, r11d, r10d,	r8
+	  UpdateContinuationHistories   (rbx-0*sizeof.State),	r9, r11d, r10d,	r8
 		mov   eax, edi
 		jmp   .Return
   end if

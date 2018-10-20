@@ -286,16 +286,16 @@ end macro
 
 
 macro ScoreQuiets start, ender
-  local cmh, fmh, fmh2, history_get_c
+  local cmh1, cmh2, cmh4, history_get_c
   local Loop, Done, TestLoop
 
-	cmh  equ r9
-	fmh  equ r10
-	fmh2 equ r11
+	cmh1 = r9
+	cmh2 = r10
+	cmh4 = r11
 
-		mov   cmh, qword[rbx-1*sizeof.State+State.counterMoves]
-		mov   fmh, qword[rbx-2*sizeof.State+State.counterMoves]
-		mov   fmh2, qword[rbx-4*sizeof.State+State.counterMoves]
+		mov   cmh1, qword[rbx-1*sizeof.State+State.contHistory]
+		mov   cmh2, qword[rbx-2*sizeof.State+State.contHistory]
+		mov   cmh4, qword[rbx-4*sizeof.State+State.contHistory]
 		mov   r8d, dword[rbp+Pos.sideToMove]
 		shl   r8d, 12+2
 		add   r8, qword[rbp+Pos.history]
@@ -317,9 +317,9 @@ Loop:
 	      movzx   edx, byte[rbp+Pos.board+rdx]
 		shl   edx, 6
 		add   edx, ecx
-		add   eax, dword[cmh+4*rdx]
-		add   eax, dword[fmh+4*rdx]
-		add   eax, dword[fmh2+4*rdx]
+		add   eax, dword[cmh1+4*rdx]
+		add   eax, dword[cmh2+4*rdx]
+		add   eax, dword[cmh4+4*rdx]
 		mov   dword[start-1*sizeof.ExtMove+ExtMove.value], eax
 		cmp   start, ender
 		 jb   Loop

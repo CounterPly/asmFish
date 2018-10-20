@@ -42,7 +42,7 @@ end virtual
 		lea   rdi, [rdx+State._stack_start]
 		mov   ecx, State._stack_end-State._stack_start
 	  rep stosb
-		mov   qword[rdx+State.counterMoves], r9
+		mov   qword[rdx+State.contHistory], r9
 		add   rdx, sizeof.State
 		cmp   rdx, r8
 		 jb   .clear_stack
