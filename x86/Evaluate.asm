@@ -1014,11 +1014,12 @@ ThreatMinorLoop:
 		jnz   ThreatMinorLoop
 ThreatMinorDone:
 
-		mov   rdx, PiecesThem
-		and   rdx, qword[rbp+Pos.typeBB+8*Queen]
-		or   rdx, r9
+
+; // b = (weak) & attackedBy[Us][ROOK];
+		mov   rdx, r9 ; r9 = weak
 		and   rdx, qword[.ei.attackedBy+8*(8*Us+Rook)]
 		jz   ThreatRookDone
+
 ThreatRookLoop:
 		bsf   rax, rdx
 		movzx   ecx, byte[rbp+Pos.board+rax]
@@ -1128,6 +1129,7 @@ WeakDone:
 		or   rcx, PiecesUs
 		BishopAttacks  rax, r8, rcx, rdx
 		and  rax, qword[.ei.attackedBy+8*(8*Us+Bishop)]
+
 		RookAttacks  r9, r8, rcx, rdx
 		and  r9, qword[.ei.attackedBy+8*(8*Us+Rook)]
 		or   rax, r9
