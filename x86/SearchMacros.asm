@@ -1497,8 +1497,8 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		jne   .20TTStore
 		cmp   byte[rbx+State.capturedPiece], 0
 		jne   .20TTStore
-		imul   r11d, r10d, -32
-		cmp   r10d, 324
+		imul  r11d, r10d, -32
+		cmp   r10d, 334
 		jae   .20TTStore
 		UpdateCmStats   (rbx-1*sizeof.State), r15, r11d, r10d, r8
 		jmp   .20TTStore
@@ -1528,7 +1528,7 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		cmp   byte[rbx+State.capturedPiece], 0
 		jne   .20TTStore
 		imul   r11d, r10d, 32
-		cmp   r10d,	324
+		cmp   r10d,	334
 		jae   .20TTStore
 		UpdateCmStats   (rbx-1*sizeof.State), r15, r11d, r10d, r8
 
@@ -1648,7 +1648,7 @@ Display	2, "Search returning %i0%n"
 		cmp   byte[rbx+State.capturedPiece], 0
 		jne   .Return
 	       imul   r11d,	r10d, -32
-		cmp   r10d,	324
+		cmp   r10d,	334
 		jae   .Return
   UpdateCmStats	  (rbx-1*sizeof.State), r15, r11d, r10d, r8
 		mov   eax, edi
@@ -1662,10 +1662,10 @@ Display	2, "Search returning %i0%n"
 	; r8 = offset in history table
 		   test   dl, dl
 		jnz   .Return
-		   imul   r11d,	r10d, -32
-		cmp   r10d,	324
+		imul   r11d, r10d, -32
+		cmp   r10d, 334
 		jae   .Return
-	apply_bonus   r8, r11d, r10d, 324
+	apply_bonus   r8, r11d, r10d, (334)
 		mov   r9d, r12d
 		and   r9d, 63
 		mov   eax, r12d

@@ -1,26 +1,31 @@
 
-macro apply_bonus address, bonus32, absbonus, denominator
+ macro apply_bonus address, bonus32, absbonus, denominator
 		mov   eax, dword[address]
-	       imul   eax, absbonus
+		imul   eax, absbonus
 		cdq
 		mov   ecx, denominator
-	       idiv   ecx
+		idiv   ecx
 		mov   ecx, bonus32
-
-;SD_String 'v'
-;SD_Int rcx
-
 		sub   ecx, eax
 		add   ecx, dword[address]
 		mov   dword[address], ecx
+ end macro
 
-;SD_String 'u'
-;SD_Int rcx
-;SD_String "|"
+ macro apply_bonus2 address, bonus32, absbonus, denominator
+ mov   eax, dword[address]
+ imul   eax, absbonus
+ cdq
+ mov   ecx, denominator
+ idiv   ecx
+ mov   ecx, bonus32
+ sub   ecx, eax
+ add   ecx, dword[address]
+ mov   dword[address], ecx
+ end macro
 
-end macro
 
-macro GetNextMove
+
+ macro GetNextMove
 	; in: rbp Position
 	;     rbx State
         ;     esi skipQuiets (0 for false, -1 for true)
@@ -33,10 +38,10 @@ macro GetNextMove
 	       call   rax
 		mov   qword[rbx+State.cur], r14
 		mov   qword[rbx+State.endMoves], r15
-end macro
+ end macro
 
-macro InsertionSort begin, ender, p, q
-local Outer, Inner, InnerDone, OuterDone
+ macro InsertionSort begin, ender, p, q
+ local Outer, Inner, InnerDone, OuterDone
 		lea   p, [begin+sizeof.ExtMove]
 		cmp   p, ender
 		jae   OuterDone
@@ -65,7 +70,7 @@ InnerDone:
 		cmp   p, ender
 		 jb   Outer
 OuterDone:
-end macro
+ end macro
 
 
 

@@ -4,7 +4,7 @@ macro UpdateCmStats ss, offset, bonus32, absbonus, t1
 	; absbonus is abs(bonus)
 	; clobbers rax, rcx, rdx, t1
   local over1, over2, over3
-	     Assert   b, absbonus, 324, 'assertion abs(bonus)<324 failed in UpdateCmStats'
+	     Assert   b, absbonus, 334, 'assertion abs(bonus)<324 failed in UpdateCmStats'
 
 		mov   t1, qword[ss-1*sizeof.State+State.counterMoves]
 		cmp   dword[ss-1*sizeof.State+State.currentMove], 1
@@ -57,8 +57,8 @@ DontUpdateKillers:
 		mov   dword[r8+4*prevOffset], move
 DontUpdateOpp:
 
-	       imul   bonus32, absbonus, 32
-		cmp   absbonus, 324
+		imul   bonus32, absbonus, 32
+		cmp   absbonus, 334
 		jae   BonusTooBig
 
 		mov   eax, move
@@ -67,7 +67,6 @@ DontUpdateOpp:
 		shl   r8d, 12+2
 		add   r8, qword[rbp+Pos.history]
 		lea   r8, [r8+4*rax]
-	apply_bonus   r8, bonus32, absbonus, 324
 
 		mov   r9d, move
 		and   r9d, 63
@@ -105,7 +104,7 @@ NextQuiet:
 		shl   eax, 6
 		lea   r9d, [rax+rcx]
 
-	apply_bonus   r8, bonus32, absbonus, 324
+	apply_bonus   r8, bonus32, absbonus, (2593 shr 3)
 
       UpdateCmStats   (rbx-0*sizeof.State), r9, bonus32, absbonus, r8
 
@@ -126,7 +125,7 @@ macro UpdateCaptureStats move, captures, captureCnt, bonusW, absbonus
 
            imul  bonusW, absbonus, 32
             mov  r9, qword[rbp + Pos.captureHistory]
-            cmp  absbonus, 324
+            cmp  absbonus, 334
             jae  BonusTooBig
 
             test r8b, dl
@@ -145,7 +144,7 @@ macro UpdateCaptureStats move, captures, captureCnt, bonusW, absbonus
             shl  ecx, 3
             add  ecx, eax
             lea  r8, [r9 + 4*rcx]
-    apply_bonus  r8, bonusW, absbonus, 324
+    apply_bonus  r8, bonusW, absbonus, 334
 
 @1:
   match =0, quiets
@@ -169,7 +168,7 @@ NextCapture:
             shl  ecx, 3
             add  ecx, eax
             lea  r8, [r9 + 4*rcx]
-    apply_bonus  r8, bonusW, absbonus, 324
+    apply_bonus  r8, bonusW, absbonus, (334)
             cmp  esi, captureCnt
              jb  NextCapture
   end match
@@ -177,6 +176,3 @@ NextCapture:
 BonusTooBig:
 Return:
 end macro
-
-
-
