@@ -1,23 +1,14 @@
 
-macro apply_bonus address, bonus32, absbonus, denominator
-		mov   eax, dword[address]
-	       imul   eax, absbonus
+macro apply_bonus entry, bonus, absbonus, denominator
+		mov   eax, dword[entry]
+		imul   eax, absbonus ; entry * |bonus|
 		cdq
 		mov   ecx, denominator
-	       idiv   ecx
-		mov   ecx, bonus32
-
-;SD_String 'v'
-;SD_Int rcx
-
+		idiv   ecx ; entry*|bonus|/D = eax
+		mov   ecx, bonus
 		sub   ecx, eax
-		add   ecx, dword[address]
-		mov   dword[address], ecx
-
-;SD_String 'u'
-;SD_Int rcx
-;SD_String "|"
-
+		add   ecx, dword[entry]
+		mov   dword[entry], ecx
 end macro
 
 macro GetNextMove

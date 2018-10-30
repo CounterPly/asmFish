@@ -1486,9 +1486,9 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		cmp  edi, eax
 		cmovg  r10d, r14d
 
-		UpdateStats   r12d, .quietsSearched, dword[.quietCount], r11d, r10d, r15
+		update_quiet_stats   r12d, .quietsSearched, dword[.quietCount], r11d, r10d, r15
  @1:
-		UpdateCaptureStats  r12d, .capturesSearched, dword[.captureCount], r11d, r14d
+		update_capture_stats  r12d, .capturesSearched, dword[.captureCount], r11d, r14d
 
  @2:
 		mov   r10d, r14d
@@ -1497,10 +1497,10 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		jne   .20TTStore
 		cmp   byte[rbx+State.capturedPiece], 0
 		jne   .20TTStore
-		imul   r11d, r10d, -32
-		cmp   r10d, 324
-		jae   .20TTStore
-		UpdateCmStats   (rbx-1*sizeof.State), r15, r11d, r10d, r8
+		imul   r11d, r10d, -1
+		; cmp   r10d, 324
+		; jae   .20TTStore
+		update_continuation_histories   (rbx-1*sizeof.State), r15, r11d, r10d, r8 ; r11d = W_bonus
 		jmp   .20TTStore
 
 .20Mate:
@@ -1527,10 +1527,10 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 	@@:
 		cmp   byte[rbx+State.capturedPiece], 0
 		jne   .20TTStore
-		imul   r11d, r10d, 32
-		cmp   r10d,	324
-		jae   .20TTStore
-		UpdateCmStats   (rbx-1*sizeof.State), r15, r11d, r10d, r8
+		imul   r11d, r10d, 1
+		; cmp   r10d,	324
+		; jae   .20TTStore
+		update_continuation_histories   (rbx-1*sizeof.State), r15, r11d, r10d, r8 ; r11d = W_bonus
 
 .20TTStore:
 	; edi = bestValue
@@ -1634,12 +1634,12 @@ Display	2, "Search returning %i0%n"
 		lea   r15d, [rax+rcx]
 		; r15d = offset of [piece_on(prevSq),prevSq]
 		test   dl, dl
-		jnz   .ReturnTTValue_UpdateCaptureStats
-		UpdateStats   r12d, 0, 0, r11d, r10d, r15
-;		jmp   .ReturnTTValue_UpdateStatsDone
-.ReturnTTValue_UpdateCaptureStats:
-;UpdateCaptureStats   r12d, 0, 0, r11d, r10d
-.ReturnTTValue_UpdateStatsDone:
+		jnz   .ReturnTTValue_update_capture_stats
+		update_quiet_stats   r12d, 0, 0, r11d, r10d, r15
+;		jmp   .ReturnTTValue_update_quiet_statsDone
+.ReturnTTValue_update_capture_stats:
+;update_capture_stats   r12d, 0, 0, r11d, r10d
+.ReturnTTValue_update_quiet_statsDone:
 		mov   eax, edi
 		lea   r10d,	[r10+2*(r13+1)+1]
 	; r10d = penalty
@@ -1647,10 +1647,10 @@ Display	2, "Search returning %i0%n"
 		jne   .Return
 		cmp   byte[rbx+State.capturedPiece], 0
 		jne   .Return
-	       imul   r11d,	r10d, -32
-		cmp   r10d,	324
-		jae   .Return
-  UpdateCmStats	  (rbx-1*sizeof.State), r15, r11d, r10d, r8
+		imul   r11d, r10d, -1
+		; cmp   r10d, 324
+		; jae   .Return
+  update_continuation_histories (rbx-1*sizeof.State), r15, r11d, r10d, r8 ; r11d = W_bonus
 		mov   eax, edi
 		jmp   .Return
 .ReturnTTValue_Penalty:
@@ -1660,22 +1660,22 @@ Display	2, "Search returning %i0%n"
 		add   r8, qword[rbp+Pos.history]
 		lea   r8, [r8+4*rcx]
 	; r8 = offset in history table
-		   test   dl, dl
+		test   dl, dl
 		jnz   .Return
-		   imul   r11d,	r10d, -32
-		cmp   r10d,	324
-		jae   .Return
-	apply_bonus   r8, r11d, r10d, 324
+		imul   r11d, r10d, -1
+		; cmp   r10d, 324
+		; jae   .Return
+	apply_bonus   r8, r11d, r10d, 10368 ; r11d = W_bonus
 		mov   r9d, r12d
 		and   r9d, 63
 		mov   eax, r12d
 		shr   eax, 6
 		and   eax, 63
-		  movzx   eax, byte[rbp+Pos.board+rax]
+		movzx   eax, byte[rbp+Pos.board+rax]
 		shl   eax, 6
 		add   r9d, eax
 	; r9 = offset in cm table
-	  UpdateCmStats   (rbx-0*sizeof.State),	r9, r11d, r10d,	r8
+	  update_continuation_histories  (rbx-0*sizeof.State), r9, r11d, r10d, r8 ; r11d = W_bonus
 		mov   eax, edi
 		jmp   .Return
   end if

@@ -1,36 +1,36 @@
 
-macro UpdateCmStats ss, offset, bonus32, absbonus, t1
-	; bonus32 is 32*bonus
+macro update_continuation_histories ss, offset, W_bonus, absbonus, t1
+	; W_bonus is 32*bonus --> 1*bonus
 	; absbonus is abs(bonus)
 	; clobbers rax, rcx, rdx, t1
   local over1, over2, over3
-	     Assert   b, absbonus, 324, 'assertion abs(bonus)<324 failed in UpdateCmStats'
+	     Assert   b, absbonus, 324, 'assertion abs(bonus)<324 failed in update_continuation_histories'
 
 		mov   t1, qword[ss-1*sizeof.State+State.counterMoves]
 		cmp   dword[ss-1*sizeof.State+State.currentMove], 1
 		 jl   over1
-	apply_bonus   (t1+4*(offset)), bonus32, absbonus, 936
+	apply_bonus   (t1+4*(offset)), W_bonus, absbonus, 29952
 over1:
 
 		mov   t1, qword[ss-2*sizeof.State+State.counterMoves]
 		cmp   dword[ss-2*sizeof.State+State.currentMove], 1
 		 jl   over2
-	apply_bonus   (t1+4*(offset)), bonus32, absbonus, 936
+	apply_bonus   (t1+4*(offset)), W_bonus, absbonus, 29952
 over2:
 
 		mov   t1, qword[ss-4*sizeof.State+State.counterMoves]
 		cmp   dword[ss-4*sizeof.State+State.currentMove], 1
 		 jl   over3
-	apply_bonus   (t1+4*(offset)), bonus32, absbonus, 936
+	apply_bonus   (t1+4*(offset)), W_bonus, absbonus, 29952
 over3:
 end macro
 
 
 
 
-macro UpdateStats move, quiets, quietsCnt, bonus32, absbonus, prevOffset
+macro update_quiet_stats move, quiets, quietsCnt, W_bonus, absbonus, prevOffset
 	; clobbers rax, rcx, rdx, r8, r9
-	; it also might clobber rsi and change the sign of bonus32
+	; it also might clobber rsi and change the sign of W_bonus
   local DontUpdateKillers, DontUpdateOpp, BonusTooBig, NextQuiet, Return
 
 
@@ -40,7 +40,7 @@ macro UpdateStats move, quiets, quietsCnt, bonus32, absbonus, prevOffset
 	      movzx   ecx, byte[rbp+Pos.board+rax]
 		shl   ecx, 6
 		add   eax, ecx
-	     Assert   e, prevOffset, rax, 'assertion prevOffset = offset of [piece_on(prevSq),prevSq] failed in UpdateStats'
+	     Assert   e, prevOffset, rax, 'assertion prevOffset = offset of [piece_on(prevSq),prevSq] failed in update_quiet_stats'
   end if
 
 
@@ -57,9 +57,9 @@ DontUpdateKillers:
 		mov   dword[r8+4*prevOffset], move
 DontUpdateOpp:
 
-	       imul   bonus32, absbonus, 32
-		cmp   absbonus, 324
-		jae   BonusTooBig
+		imul   W_bonus, absbonus, 1
+		; cmp   absbonus, 324
+		; jae   BonusTooBig
 
 		mov   eax, move
 		and   eax, 64*64-1
@@ -67,7 +67,7 @@ DontUpdateOpp:
 		shl   r8d, 12+2
 		add   r8, qword[rbp+Pos.history]
 		lea   r8, [r8+4*rax]
-	apply_bonus   r8, bonus32, absbonus, 324
+	apply_bonus   r8, W_bonus, absbonus, 10368
 
 		mov   r9d, move
 		and   r9d, 63
@@ -77,13 +77,13 @@ DontUpdateOpp:
 	      movzx   eax, byte[rbp+Pos.board+rax]
 		shl   eax, 6
 		add   r9d, eax
-      UpdateCmStats   (rbx-0*sizeof.State), r9, bonus32, absbonus, r8
+      update_continuation_histories   (rbx-0*sizeof.State), r9, W_bonus, absbonus, r8
 
 
   match =0, quiets
   else
 	; Decrease all the other played quiet moves
-		neg   bonus32
+		neg   W_bonus
 		xor   esi, esi
 		cmp   esi, quietsCnt
 		 je   Return
@@ -101,13 +101,13 @@ NextQuiet:
 		and   ecx, 63
 		shr   eax, 6
 		and   eax, 63
-	      movzx   eax, byte[rbp+Pos.board+rax]
+		movzx   eax, byte[rbp+Pos.board+rax]
 		shl   eax, 6
 		lea   r9d, [rax+rcx]
 
-	apply_bonus   r8, bonus32, absbonus, 324
+		apply_bonus   r8, W_bonus, absbonus, 10368
 
-      UpdateCmStats   (rbx-0*sizeof.State), r9, bonus32, absbonus, r8
+		update_continuation_histories   (rbx-0*sizeof.State), r9, W_bonus, absbonus, r8
 
 		add   esi, 1
 		cmp   esi, quietsCnt
@@ -119,15 +119,15 @@ Return:
 end macro
 
 
-macro UpdateCaptureStats move, captures, captureCnt, bonusW, absbonus
+macro update_capture_stats move, captures, captureCnt, W_bonus, absbonus
 	; clobbers rax, rcx, rdx, r8, r9
 	; it also might clobber rsi, r11
   local BonusTooBig, NextCapture, Return
 
-           imul  bonusW, absbonus, 32
+            imul  W_bonus, absbonus, 1
             mov  r9, qword[rbp + Pos.captureHistory]
-            cmp  absbonus, 324
-            jae  BonusTooBig
+            ; cmp  absbonus, 324
+            ; jae  BonusTooBig
 
             test r8b, dl
             jz   @1f
@@ -145,12 +145,12 @@ macro UpdateCaptureStats move, captures, captureCnt, bonusW, absbonus
             shl  ecx, 3
             add  ecx, eax
             lea  r8, [r9 + 4*rcx]
-    apply_bonus  r8, bonusW, absbonus, 324
+    apply_bonus  r8, W_bonus, absbonus, 10368
 
 @1:
   match =0, quiets
   else
-            neg  bonusW
+            neg  W_bonus
             xor  esi, esi
             cmp  esi, captureCnt
              je  Return
@@ -169,7 +169,7 @@ NextCapture:
             shl  ecx, 3
             add  ecx, eax
             lea  r8, [r9 + 4*rcx]
-    apply_bonus  r8, bonusW, absbonus, 324
+    apply_bonus  r8, W_bonus, absbonus, 10368
             cmp  esi, captureCnt
              jb  NextCapture
   end match
@@ -177,6 +177,3 @@ NextCapture:
 BonusTooBig:
 Return:
 end macro
-
-
-
