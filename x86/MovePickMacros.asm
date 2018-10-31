@@ -1,24 +1,38 @@
 
 macro apply_bonus address, bonus32, absbonus, denominator
 		mov   eax, dword[address]
-	       imul   eax, absbonus
+		imul   eax, absbonus
 		cdq
 		mov   ecx, denominator
-	       idiv   ecx
+		idiv   ecx
 		mov   ecx, bonus32
-
-;SD_String 'v'
-;SD_Int rcx
-
+		_vpxor  xmm1, xmm1, xmm1
+		_vcvtsi2sd  xmm1, xmm1, ecx
+		_vdivsd  xmm1, xmm1, qword[constd._32p0]
+		_vmulsd  xmm1, xmm1, qword[constd._32p0]
+		_vcvttsd2si  ecx, xmm1
 		sub   ecx, eax
 		add   ecx, dword[address]
 		mov   dword[address], ecx
-
-;SD_String 'u'
-;SD_Int rcx
-;SD_String "|"
-
 end macro
+
+ macro apply_bonus2 entry, bonus32, absbonus
+		mov   eax, dword[entry]
+		imul   eax, absbonus
+		_vpxor  xmm0, xmm0, xmm0
+		_vcvtsi2sd  xmm0, xmm0, eax
+		_vdivsd  xmm0, xmm0, qword[constd._334p125]
+		_vcvttsd2si  eax, xmm0
+		mov   ecx, bonus32
+		_vpxor  xmm1, xmm1, xmm1
+		_vcvtsi2sd  xmm1, xmm1, ecx
+		_vdivsd  xmm1, xmm1, qword[constd._32p0]
+		_vmulsd  xmm1, xmm1, qword[constd._32p0]
+		_vcvttsd2si  ecx, xmm1
+		sub   ecx, eax
+		add   ecx, dword[entry]
+		mov   dword[entry], ecx
+ end macro
 
 macro GetNextMove
 	; in: rbp Position

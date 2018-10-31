@@ -67,7 +67,7 @@ DontUpdateOpp:
 		shl   r8d, 12+2
 		add   r8, qword[rbp+Pos.history]
 		lea   r8, [r8+4*rax]
-	apply_bonus   r8, bonus32, absbonus, 324
+	apply_bonus2   r8, bonus32, absbonus
 
 		mov   r9d, move
 		and   r9d, 63
@@ -105,7 +105,7 @@ NextQuiet:
 		shl   eax, 6
 		lea   r9d, [rax+rcx]
 
-	apply_bonus   r8, bonus32, absbonus, 324
+	apply_bonus2   r8, bonus32, absbonus
 
       UpdateCmStats   (rbx-0*sizeof.State), r9, bonus32, absbonus, r8
 
@@ -145,7 +145,7 @@ macro UpdateCaptureStats move, captures, captureCnt, bonusW, absbonus
             shl  ecx, 3
             add  ecx, eax
             lea  r8, [r9 + 4*rcx]
-    apply_bonus  r8, bonusW, absbonus, 324
+    apply_bonus2  r8, bonusW, absbonus
 
 @1:
   match =0, quiets
@@ -169,7 +169,7 @@ NextCapture:
             shl  ecx, 3
             add  ecx, eax
             lea  r8, [r9 + 4*rcx]
-    apply_bonus  r8, bonusW, absbonus, 324
+    apply_bonus2  r8, bonusW, absbonus
             cmp  esi, captureCnt
              jb  NextCapture
   end match
@@ -177,6 +177,3 @@ NextCapture:
 BonusTooBig:
 Return:
 end macro
-
-
-

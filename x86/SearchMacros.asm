@@ -1665,7 +1665,7 @@ Display	2, "Search returning %i0%n"
 		   imul   r11d,	r10d, -32
 		cmp   r10d,	324
 		jae   .Return
-	apply_bonus   r8, r11d, r10d, 324
+	apply_bonus2   r8, r11d, r10d
 		mov   r9d, r12d
 		and   r9d, 63
 		mov   eax, r12d
