@@ -9,7 +9,8 @@ macro apply_bonus address, bonus32, absbonus, denominator
 		_vpxor  xmm1, xmm1, xmm1
 		_vcvtsi2sd  xmm1, xmm1, ecx
 		_vdivsd  xmm1, xmm1, qword[constd._32p0]
-		_vmulsd  xmm1, xmm1, qword[constd._32p0]
+		_vdivsd  xmm1, xmm1, qword[constd._33p0]
+		; _vmulsd  xmm1, xmm1, qword[constd._32p0]
 		_vcvttsd2si  ecx, xmm1
 		sub   ecx, eax
 		add   ecx, dword[address]
@@ -22,12 +23,14 @@ end macro
 		_vpxor  xmm0, xmm0, xmm0
 		_vcvtsi2sd  xmm0, xmm0, eax
 		_vdivsd  xmm0, xmm0, qword[constd._334p125]
+		; _vdivsd  xmm0, xmm0, qword[constd._324p0]
 		_vcvttsd2si  eax, xmm0
 		mov   ecx, bonus32
 		_vpxor  xmm1, xmm1, xmm1
 		_vcvtsi2sd  xmm1, xmm1, ecx
 		_vdivsd  xmm1, xmm1, qword[constd._32p0]
-		_vmulsd  xmm1, xmm1, qword[constd._32p0]
+		_vdivsd  xmm1, xmm1, qword[constd._33p0]
+		; _vmulsd  xmm1, xmm1, qword[constd._33p0]
 		_vcvttsd2si  ecx, xmm1
 		sub   ecx, eax
 		add   ecx, dword[entry]

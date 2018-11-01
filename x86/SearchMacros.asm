@@ -1461,6 +1461,29 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		imul   eax, eax
 		lea   r10d, [rax+2*r13-2]
 		lea   r14d, [r10+2*(r13+1)+1]
+
+		imul  r10d, r10d, 33
+		imul  r14d, r14d, 33
+
+		; mov   edx, dword[.depth]
+		;
+		; xor  rcx, rcx
+		;
+		; mov   r13d, edx          ; save depth
+		; mov   ecx, edx           ; save depth #2
+		; imul  edx, edx           ; edx = d^2
+		; mov   eax, edx           ; eax = d^2
+		; shl   eax, 5             ; eax = 32*d^2
+		; add   eax, edx           ; eax = 33*d^2
+		; imul  r13d, r13d, 66     ; 66*d
+		; lea   r10d, [rax+r13-66] ; r10d = f(d) = 33*d^2 + 66*d - 66
+		; imul  ecx, ecx, -62      ; ecx = -62*d
+		; lea  r14d, [r10-r8+67]   ; r10-62*d+67 = f(d+1)
+
+		; lea   r10d, [rax+2*r13-2]
+		; lea   r14d, [r10+2*(r13+1)+1]
+
+
 	; r15d = offset of [piece_on(prevSq),prevSq]
 	; r12d = move
 	; r13d = depth
