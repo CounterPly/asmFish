@@ -1605,11 +1605,11 @@ Display	2, "Search returning %i0%n"
 	 calign   8
 .ReturnTTValue:
 	; edi = ttValue
-		mov   r12d,	ecx
+		mov   r12d, ecx
 		mov   eax, dword[.depth]
-		mov   r13d,	eax
-		   imul   eax, eax
-		lea   r10d,	[rax+2*r13-2]
+		mov   r13d, eax
+		imul   eax, eax
+		lea   r10d, [rax+2*r13-2]
 	; r12d = move
 	; r13d = depth
 	; r10d = bonus
@@ -1641,16 +1641,16 @@ Display	2, "Search returning %i0%n"
 ;UpdateCaptureStats   r12d, 0, 0, r11d, r10d
 .ReturnTTValue_UpdateStatsDone:
 		mov   eax, edi
-		lea   r10d,	[r10+2*(r13+1)+1]
+		lea   r10d, [r10+2*(r13+1)+1]
 	; r10d = penalty
 		cmp   dword[rbx-1*sizeof.State+State.moveCount], 1
 		jne   .Return
 		cmp   byte[rbx+State.capturedPiece], 0
 		jne   .Return
-	       imul   r11d,	r10d, -32
-		cmp   r10d,	324
+		imul   r11d, r10d, -32
+		cmp   r10d, 324
 		jae   .Return
-  UpdateCmStats	  (rbx-1*sizeof.State), r15, r11d, r10d, r8
+  UpdateCmStats (rbx-1*sizeof.State), r15, r11d, r10d, r8
 		mov   eax, edi
 		jmp   .Return
 .ReturnTTValue_Penalty:
@@ -1660,10 +1660,10 @@ Display	2, "Search returning %i0%n"
 		add   r8, qword[rbp+Pos.history]
 		lea   r8, [r8+4*rcx]
 	; r8 = offset in history table
-		   test   dl, dl
+		test   dl, dl
 		jnz   .Return
-		   imul   r11d,	r10d, -32
-		cmp   r10d,	324
+		imul   r11d, r10d, -32
+		cmp   r10d, 324
 		jae   .Return
 	apply_bonus2   r8, r11d, r10d
 		mov   r9d, r12d
