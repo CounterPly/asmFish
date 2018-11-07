@@ -314,7 +314,7 @@ Loop:
 		lea   start, [start+sizeof.ExtMove]
 		and   ecx, 63
 		and   edx, 63
-	      movzx   edx, byte[rbp+Pos.board+rdx]
+		movzx   edx, byte[rbp+Pos.board+rdx]
 		shl   edx, 6
 		add   edx, ecx
 		add   eax, dword[cmh1+4*rdx]

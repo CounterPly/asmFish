@@ -189,8 +189,9 @@ _stack_start rb 0
  staticEval	  rd 1
  statScore        rd 1
  ply		  rb 1
- rb 1
-		  rb 2
+rb 3
+contHisValue rq 1
+rq 1
 _stack_end rb 0
 ; move picker data
 _movepick_start rb 0
@@ -440,7 +441,7 @@ else if VERSION_OS = 'W'
     Group       dw ?
                 dw ?,?,?
   ends
-  
+
   struct WinNumaNode
    Relationship	rd 1
    Size		rd 1
@@ -448,7 +449,7 @@ else if VERSION_OS = 'W'
   		rd 5
    GroupMask	GROUP_AFFINITY
   ends
-  
+
   struct NumaNode
    nodeNumber	rd 1
    coreCnt	rd 1
@@ -538,4 +539,3 @@ struct ExtBookMove
  total  rd 1
  repetition rd 1
 ends
-

@@ -148,7 +148,47 @@ MovePick_QUIET_GEN:
 		mov   r12, rdi
 		call   Gen_Quiets
 		mov   r15, rdi
-	ScoreQuiets   r12, rdi
+
+	; ScoreQuiets   r12, rdi
+	; local cmh1, cmh2, cmh4, history_get_c
+	; local Loop, Done, TestLoop
+	  ;
+	  ; cmh1 = r9
+	  ; cmh2 = r10
+	  ; cmh4 = r11
+
+		  mov   r9, qword[rbx-1*sizeof.State+State.contHistory]
+		  mov   qword[rbx+State.contHisValue], r9
+		  mov   r10, qword[rbx-2*sizeof.State+State.contHistory]
+		  mov   r11, qword[rbx-4*sizeof.State+State.contHistory]
+		  mov   r8d, dword[rbp+Pos.sideToMove]
+		  shl   r8d, 12+2
+		  add   r8, qword[rbp+Pos.history]
+
+	  ; history_get_c = r8
+
+		  cmp   r12, rdi
+		  jae   @2f
+  @1:
+		  mov   ecx, dword[r12+ExtMove.move]
+		  mov   eax, ecx
+		  mov   edx, ecx
+		  and   eax, 64*64-1
+		  mov   eax, dword[r8+4*rax]
+		  shr   edx, 6
+		  lea   r12, [r12+sizeof.ExtMove]
+		  and   ecx, 63
+		  and   edx, 63
+		  movzx   edx, byte[rbp+Pos.board+rdx]
+		  shl   edx, 6
+		  add   edx, ecx
+		  add   eax, dword[r9+4*rdx]
+		  add   eax, dword[r10+4*rdx]
+		  add   eax, dword[r11+4*rdx]
+		  mov   dword[r12-1*sizeof.ExtMove+ExtMove.value], eax
+		  cmp   r12, rdi
+		   jb   @1b
+  @2:
 
         ; partial insertion sort
 		lea   r10, [r14+sizeof.ExtMove]
@@ -183,26 +223,25 @@ MovePick_QUIET_GEN:
 		cmp   r8, r15
 		jb   .SortLoop
 .SortDone:
-
 		lea   rdx, [MovePick_QUIETS]
 		mov   qword[rbx+State.stage], rdx
 
 MovePick_QUIETS:
 		test  esi, esi
 		js  .WhileDone
-            @1:
+    @@:
 		mov  eax, dword[r14 + ExtMove.move]
 		cmp  r14, r15
 		jae  .WhileDone
 		add  r14, sizeof.ExtMove
 		cmp  eax, dword[rbx + State.ttMove]
-		 je  @1b
+		 je  @b
 		cmp  eax, dword[rbx + State.mpKillers + 4*0]
-		 je  @1b
+		 je  @b
 		cmp  eax, dword[rbx + State.mpKillers + 4*1]
-		 je  @1b
+		 je  @b
 		cmp  eax, dword[rbx + State.countermove]
-		 je  @1b
+		 je  @b
 		ret
 
 	     calign   16, MovePick_BAD_CAPTURES
@@ -238,7 +277,52 @@ MovePick_ALL_EVASIONS:
 		call   Gen_Evasions
 		mov   r15, rdi
 		mov   r12, r14
-      ScoreEvasions   r12, r15
+
+  ScoreEvasions   r12, r15
+; 	  mov   edi, dword[rbp+Pos.sideToMove]
+; 	  shl   edi, 12+2
+; 	  add   rdi, qword[rbp+Pos.history]
+;
+;   ; history_get_c equ rdi
+;
+; 	  cmp   r12, r15
+; 	  jae   Done
+; WhileLoop:
+; 	  mov   ecx, dword[r12+ExtMove.move]
+; 	  mov   r10d, ecx 	; r10d = move
+; 	  mov   r8d, ecx
+; 	  shr   r8d, 6
+; 	  and   r8d, 63
+; 	  and   ecx, 63
+; 	  lea   r12, [r12+sizeof.ExtMove]
+; 		movzx   ecx, byte[rbp+Pos.board+rcx]	; ecx = to piece
+; 		movzx   edx, byte[rbp+Pos.board+r8]	; edx = from piece
+; 	  cmp   r10d, MOVE_TYPE_EPCAP shl 12
+; 	  jae   Special
+; 		 test   ecx, ecx
+; 	  jnz   Capture
+; Normal:
+; 	  and   r10d, 64*64-1
+; 	  mov   eax, dword[rdi+4*r10]
+; 	  mov   dword[r12-1*sizeof.ExtMove+ExtMove.value], eax
+; 	  cmp   r12, r15
+; 	   jb   WhileLoop
+; 	  jmp   Done
+; Special:
+; 	  cmp   r10d, MOVE_TYPE_CASTLE shl 12
+; 	  jae   Normal ; castling
+; Capture:
+; 	  mov   eax, dword[PieceValue_MG+4*ecx]
+; 	  and   edx, 7
+; 	  sub   eax, edx
+; 	  add   eax, HistoryStats_Max+1	; match piece types of master
+; 	  mov   dword[r12-1*sizeof.ExtMove+ExtMove.value], eax
+; 	  cmp   r12, r15
+; 	   jb   WhileLoop
+		mov  eax, dword[r12-1*sizeof.ExtMove+ExtMove.value]
+		add  rax, qword[rbx+State.contHisValue]
+		mov  dword[r12-1*sizeof.ExtMove+ExtMove.value], eax
+
 		lea   rdx, [MovePick_REMAINING_EVASIONS]
 		mov   qword[rbx+State.stage], rdx
 		jmp   MovePick_REMAINING_EVASIONS
