@@ -1,5 +1,5 @@
 
-macro QSearch PvNode, InCheck
+ macro QSearch PvNode, InCheck
         ; in:
         ;  rbp: address of Pos struct in thread struct
         ;  rbx: address of State
@@ -8,7 +8,7 @@ macro QSearch PvNode, InCheck
         ;  r8d: depth
 
 
-virtual at rsp
+ virtual at rsp
   .tte	     rq 1      ; 0
   .ltte      rq 1      ; 8
   .searchFxn rq 1      ; 16
@@ -51,9 +51,9 @@ virtual at rsp
 			   rb 1
 			   rb 1
 			   rb 1
-if PvNode = 1
+ if PvNode = 1
   ._pv		   rd MAX_PLY+1
-end if
+ end if
 
   .lend rb 0
 
@@ -82,10 +82,11 @@ end if
 		mov   dword[.alpha], ecx
 		mov   dword[.beta], edx
 		mov   dword[.depth], r8d
-             Assert   le, r8d, 0, 'assertion depth<=0 failed in qsearch'
+		Assert   le, r8d, 0, 'assertion depth<=0 failed in qsearch'
 
 		movzx   eax, byte[rbx+State.ply]
 		xor   edx, edx
+
 	if PvNode = 1
 		lea   r8, [._pv]
 		mov   r9, qword[rbx+State.pv]
@@ -93,6 +94,7 @@ end if
 		mov   qword[rbx+1*sizeof.State+State.pv], r8
 		mov   dword[r9], edx
 	end if
+
 		lea   ecx, [rax + 1]
 		mov   dword[.moveCount], 2
 		mov   dword[.bestMove], edx
@@ -637,4 +639,4 @@ Display 2, "QSearch returning %i0%n"
 .CheckDraw_Cold:
      PosIsDraw_Cold   .AbortSearch_PlySmaller, .CheckDraw_ColdRet
 
-end macro
+ end macro

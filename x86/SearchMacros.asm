@@ -11,19 +11,20 @@ CapturePruneMargin4 = 996  ; 4 * PawnValueEg * 1038 / 1000
 CapturePruneMargin5 = 1140 ; 5 * PawnValueEg * 950  / 1000
 CapturePruneMargin6 = 1339 ; 6 * PawnValueEg * 930  / 1000
 
-macro search RootNode, PvNode
-	; in:
+  macro search RootNode, PvNode
+   ; in:
 	;  rbp:	address	of Pos struct in thread	struct
 	;  rbx:	address	of State
 	;  ecx:	alpha
 	;  edx:	beta
 	;  r8d:	depth
-	;  r9l:	cutNode	 must be 0 or -1 (=FFh)
+	;  r9l:	cutNode must be 0 or -1 (=FFh)
 	; out:
 	;  eax:	score
-  if RootNode =	1 & PvNode = 0
+
+   if RootNode = 1 & PvNode = 0
     err	'bad params to search'
-  end if
+     end if
 
   virtual at rsp
     .tte		rq 1
@@ -67,32 +68,35 @@ macro search RootNode, PvNode
     .reduction		    rd 1
     .quietsSearched	rd 64
     .capturesSearched	rd 32
+
     if PvNode =	1
       .pvExact		rd 1
       .pv		rd MAX_PLY + 1
     end	if
-    .lend		rb 0
-  end virtual
-  .localsize = (.lend-rsp+15) and -16
 
-	       push   rbx rsi rdi r12 r13 r14 r15
-	 _chkstk_ms   rsp, .localsize
+    .lend		rb 0
+   end virtual
+   .localsize = (.lend-rsp+15) and -16
+
+		push   rbx rsi rdi r12 r13 r14 r15
+		_chkstk_ms   rsp, .localsize
 		sub   rsp, .localsize
 
 		mov   dword[.alpha], ecx
 		mov   dword[.beta], edx
 		mov   dword[.depth], r8d
 		mov   byte[.cutNode], r9l
+
   if DEBUG
-		lea   eax, [r9+1]
-	     Assert   b, al, 2,	'assertion .cutNode == 0 or -1 failed in Search'
-  end if
+		 lea   eax, [r9+1]
+		 Assert   b, al, 2,	'assertion .cutNode == 0 or -1 failed in Search'
+    end if
 
   if RootNode = 1
-             Assert   e, byte[rbx+State.ply], 0, 'assertion ss->ply == 0 failed in SearchRoot'
-  end if
+   		Assert   e, byte[rbx+State.ply], 0, 'assertion ss->ply == 0 failed in SearchRoot'
+    end if
 
-Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
+      Display 2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 
 	; Step 1. initialize node
 		xor   eax, eax
@@ -102,89 +106,93 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		mov   dword[rbx+State.moveCount], eax
 		mov   dword[.bestValue], -VALUE_INFINITE
 
-	      movzx   r12d, byte[rbx + State.ply]
+		movzx   r12d, byte[rbx + State.ply]
 		lea   edx, [r12 + 1]
-	        mov   byte[rbx + 1*sizeof.State + State.ply], dl
-        ; edx = ss->ply + 1  ( = (ss + 1)->ply )
-        ; r12d = ss->ply
+		mov   byte[rbx + 1*sizeof.State + State.ply], dl
+		; edx = ss->ply + 1  ( = (ss + 1)->ply )
+		; r12d = ss->ply
 
   if PvNode = 1
-	      movzx   eax, byte[rbp-Thread.rootPos+Thread.selDepth]
-		cmp   eax, edx
-	      cmovb   eax, edx
-		mov   byte[rbp-Thread.rootPos+Thread.selDepth],	al
-  end if
+		 movzx   eax, byte[rbp-Thread.rootPos+Thread.selDepth]
+		 cmp   eax, edx
+		 cmovb   eax, edx
+		 mov   byte[rbp-Thread.rootPos+Thread.selDepth], al
+   end if
 
 	; callsCnt counts down as in master
 	; resetCnt, if nonzero,	contains the count to which callsCnt should be reset
 		mov   eax, dword[rbp-Thread.rootPos+Thread.resetCnt]
 		mov   edx, dword[rbp-Thread.rootPos+Thread.callsCnt]
-	       test   eax, eax
-		 jz   .dontreset
+		test   eax, eax
+		jz   .dontreset
+
 		mov   edx, eax
 		mov   dword[rbp-Thread.rootPos+Thread.resetCnt], 0
+
 	.dontreset:
 		sub   edx, 1
 		mov   dword[rbp-Thread.rootPos+Thread.callsCnt], edx
 		jns   .dontchecktime
-	       call   CheckTime		; CheckTime sets resetCalls for	all threads
+
+		call   CheckTime ; CheckTime sets resetCalls for all threads
+
 	.dontchecktime:
 
-
   if RootNode =	0
-	; Step 2. check	for aborted search and immediate draws
-	      movzx   edx, word[rbx+State.rule50]
-	      movzx   ecx, word[rbx+State.pliesFromNull]
-		mov   r8, qword[rbx+State.key]
-		mov   eax, r12d
-		cmp   r12d, MAX_PLY
-		jae   .AbortSearch_PlyBigger
-		cmp   byte[signals.stop], 0
-		jne   .AbortSearch_PlySmaller
 
-	; ss->ply < MAX_PLY holds at this point, so if we should
-	;   go to .AbortSearch_PlySmaller if a draw is detected
-	  PosIsDraw   .AbortSearch_PlySmaller, .CheckDraw_Cold,	.CheckDraw_ColdRet
+   ; Step 2. check for aborted search and immediate draws
+ 		 movzx   edx, word[rbx+State.rule50]
+ 		 movzx   ecx, word[rbx+State.pliesFromNull]
+ 		 mov   r8, qword[rbx+State.key]
+ 		 mov   eax, r12d
+ 		 cmp   r12d, MAX_PLY
+ 		 jae   .AbortSearch_PlyBigger
+ 		 cmp   byte[signals.stop], 0
+ 		 jne   .AbortSearch_PlySmaller
+
+ 	 ; ss->ply < MAX_PLY holds at this point, so if we should
+ 	 ;   go to .AbortSearch_PlySmaller if a draw is detected
+ 	  PosIsDraw   .AbortSearch_PlySmaller, .CheckDraw_Cold,	.CheckDraw_ColdRet
 
 
-	; Step 3. mate distance	pruning
-		mov   ecx, dword[.alpha]
-		mov   edx, dword[.beta]
-		mov   eax, r12d
-		sub   eax, VALUE_MATE
-		cmp   ecx, eax
-	      cmovl   ecx, eax
-		not   eax
-		cmp   edx, eax
-	      cmovg   edx, eax
-		mov   dword[.alpha], ecx
-		mov   dword[.beta], edx
-		mov   eax, ecx
-		cmp   ecx, edx
-		jge   .Return
+ 	; Step 3. mate distance	pruning
+ 		mov   ecx, dword[.alpha]
+ 		mov   edx, dword[.beta]
+ 		mov   eax, r12d
+ 		sub   eax, VALUE_MATE
+ 		cmp   ecx, eax
+ 		cmovl   ecx, eax
+ 		not   eax
+ 		cmp   edx, eax
+ 		cmovg   edx, eax
+ 		mov   dword[.alpha], ecx
+ 		mov   dword[.beta], edx
+ 		mov   eax, ecx
+ 		cmp   ecx, edx
+ 		jge   .Return
 
-	; Check if there exists a move which draws by repetition, or an alternative
-	; earlier move to this position.
-		cmp   ecx, VALUE_DRAW
-		jge   @f
+ 	; Check if there exists a move which draws by repetition, or an alternative
+ 	; earlier move to this position.
+ 		cmp   ecx, VALUE_DRAW
+ 		jge   @f
 
-		mov   dx, word[rbx+State.rule50]
-		cmp   dx, 3
-		jl    @f
+ 		mov   dx, word[rbx+State.rule50]
+ 		cmp   dx, 3
+ 		jl    @f
 
-		call  Position_HasGameCycle
-		cmp   eax, 1
-		jne   @f
+ 		call  Position_HasGameCycle
+ 		cmp   eax, 1
+ 		jne   @f
 
-		mov   ecx, VALUE_DRAW
-		mov   dword[.alpha], ecx
-		mov   edx, dword[.beta]
-		mov   eax, ecx
-		cmp   ecx, edx
-		jge   .Return
+ 		mov   ecx, VALUE_DRAW
+ 		mov   dword[.alpha], ecx
+ 		mov   edx, dword[.beta]
+ 		mov   eax, ecx
+ 		cmp   ecx, edx
+ 		jge   .Return
 
-	@@:
-  end if
+ 	@@:
+   end if
 
              Assert   b, r12d, MAX_PLY, 'assertion 0 <= ss->ply < MAX_PLY failed in Search'
 
@@ -324,11 +332,13 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		mov   edx, dword[.depth]
 		cmp   edx, 2*ONE_PLY
 		jg    .6skip
+
 	if USE_MATEFINDER =	1
 		lea   eax, [rcx+2*VALUE_KNOWN_WIN-1]
 		cmp   eax, 4*VALUE_KNOWN_WIN-1
 		jae   .6skip
 	end	if
+
 		mov  ecx, dword[.alpha]
 		cmp  edx, ONE_PLY
 		jne  @1f
@@ -337,7 +347,7 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		jl   @1f
 		lea  edx, [rcx + 1]
 		xor  r8d, r8d
-		   call  QSearch_NonPv_NoCheck
+		call  QSearch_NonPv_NoCheck
 		jmp  .Return
 @1:
 		lea  eax, [ecx - RazorMargin2]
@@ -400,40 +410,44 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 ._7skip:
   end if
 
-
-
-	    ; Step 8. Null move	search with verification search	(is omitted in PV nodes)
+	; Step 8. Null move search with verification search (is omitted in PV nodes)
   if PvNode = 0
 		mov  edx, dword[rbx-1*sizeof.State+State.statScore]
 		cmp  edx, 22500
 		jge  .8skip
+
 		mov   edx, dword[rbx-1*sizeof.State+State.currentMove]
 		cmp   edx, MOVE_NULL
-		je  .8skip
+		je   .8skip
+
 		mov   edx, dword[.depth]
-		imul   eax, edx,	36
+		imul   eax, edx, 36
 		add   eax, dword[rbx+State.staticEval]
 		mov   esi, dword[.beta]
 		cmp   esi, dword[.evalu]
 		jg   .8skip
+
 		add   esi, 225
 		mov   r8d, dword[.excludedMove]
 		test  r8d, r8d
 		jnz   .8skip
+
 		xor   rcx,rcx
 		mov   ecx, dword[rbp+Pos.sideToMove]
 		movzx   ecx, word[rbx+State.npMaterial+2*rcx]
 		test   ecx, ecx
 		jz   .8skip
-    if USE_MATEFINDER =	0
-                mov   ecx, dword[rbx + State.ply]
-                cmp   ecx, dword[rbp - Thread.rootPos + Thread.nmp_ply]
-                jge   @1f
-                and   ecx, 1
-                cmp   ecx, dword[rbp - Thread.rootPos + Thread.nmp_odd]
-                 je   .8skip
-        @1:
-    else
+
+		mov   ecx, dword[rbx + State.ply]
+		cmp   ecx, dword[rbp - Thread.rootPos + Thread.nmp_ply]
+		jge   @1f
+
+		and   ecx, 1
+		cmp   ecx, dword[rbp - Thread.rootPos + Thread.nmp_odd]
+		je   .8skip
+	@1:
+
+ if USE_MATEFINDER = 1
 		mov   r8d, dword[.evalu]
 		mov   ecx, dword[rbx+State.npMaterial]
 		test   ecx, 0x0FFFF
@@ -443,11 +457,12 @@ Display	2, "Search(alpha=%i1, beta=%i2, depth=%i8) called%n"
 		add   r8d, 2*VALUE_KNOWN_WIN-1
 		cmp   r8d, 4*VALUE_KNOWN_WIN-1
 		jae   .8skip
-    end	if
+ end if
+
 		cmp   eax, esi
 		 jl   .8skip
 
-    if USE_MATEFINDER =	1
+ if USE_MATEFINDER = 1
 		mov   edx, dword[.depth]
 		cmp   edx, 4
 		jbe   .8do
