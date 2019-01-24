@@ -512,7 +512,7 @@ namespace {
     constexpr bool PvNode = NT == PV;
     const bool rootNode = PvNode && ss->ply == 0;
 
-    // Check if we have an upcoming move which draws by repetition, or 
+    // Check if we have an upcoming move which draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
     if (   pos.rule50_count() >= 3
         && alpha < VALUE_DRAW
@@ -1157,7 +1157,7 @@ moves_loop: // When in check, search starts from here
             update_quiet_stats(pos, ss, bestMove, quietsSearched, quietCount, stat_bonus(depth));
         else
             update_capture_stats(pos, bestMove, capturesSearched, captureCount,
-                                 stat_bonus(depth + (bestValue > beta + KnightValueMg ? ONE_PLY : DEPTH_ZERO)));
+                                 stat_bonus(depth + ONE_PLY));
 
         // Extra penalty for a quiet TT move in previous ply when it gets refuted
         if ((ss-1)->moveCount == 1 && !pos.captured_piece())

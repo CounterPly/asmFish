@@ -1555,7 +1555,7 @@ end if
 		mov   edi, dword[.bestValue]
 		cmp   dword[.moveCount], 0
 		je   .20Mate
-		test   r12d,	r12d
+		test   r12d, r12d
 		jz   .20CheckBonus
 .20Quiet:
 		mov   edx, r12d
@@ -1565,16 +1565,14 @@ end if
 		movzx   eax, byte[rbp+Pos.board+rax]
 		or   al, byte[_CaptureOrPromotion_or+rdx]
 		test   al, byte[_CaptureOrPromotion_and+rdx]
+
 		jnz   .20Quiet_UpdateCaptureStats
-	UpdateStats   r12d, .quietsSearched, dword[.quietCount], r11d, r10d, r15
+
+		UpdateStats   r12d, .quietsSearched, dword[.quietCount], r11d, r10d, r15
 		jmp   .20Quiet_UpdateStatsDone
+
 .20Quiet_UpdateCaptureStats:
  		mov  dword[.statBonusDepth], r10d
- 		mov  eax, dword[.beta]
- 		add  eax, KnightValueMg
- 		cmp dword[.bestValue], eax
- 		jle @f
-
   		lea   r10d, [r10+2*(r13+1)+1]
 
   	@@:
