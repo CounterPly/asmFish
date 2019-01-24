@@ -1131,8 +1131,7 @@ end if
     ; Futility pruning:	parent node
 		xor   edx, edx
 		cmp   edi, 7*ONE_PLY
-		jg    .13done
-		je    @f
+		jge   @f
 		test  edi, edi
 		cmovs edi, edx
 		imul  eax, edi, 200
@@ -1145,7 +1144,7 @@ end if
 @@:
     ; Prune moves with negative	SEE at low depths
 		mov   ecx, dword[.move]
-		imul   edx, edi, -35
+		imul   edx, edi, -29
 		imul   edx, edi
 		call   SeeTestGe
 		test   eax, eax
