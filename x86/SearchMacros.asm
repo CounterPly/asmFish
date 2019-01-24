@@ -1153,8 +1153,6 @@ end if
 		jmp   .13done
 .13else:
 		mov   ecx, dword[.move]
-		cmp   edx, 7*ONE_PLY
-		jge   .13done
 		cmp   byte[.extension],	0
 		jne   .13done
 
