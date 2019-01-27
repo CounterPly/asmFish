@@ -1150,12 +1150,10 @@ WeakDone:
 		imul   eax, Connectivity
 		addsub  esi, eax
 
-; // Bonus for overload (non-pawn enemies attacked and defended exactly once)
+; // Bonus for overload (non-pawn enemies attacked once or more and defended exactly once)
 		mov    r8, PiecesPawn
 		_andn  r8, r8, PiecesThem ; r8 = nonPawnEnemies
 		and    r8, AttackedByUs
-		mov    r9, qword[.ei.attackedBy2+8*Us]
-		_andn  r8, r9, r8
 		and    r8, AttackedByThem
 		mov    r9, qword[.ei.attackedBy2+8*Them]
 		_andn  r8, r9, r8
