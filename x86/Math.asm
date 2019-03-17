@@ -97,7 +97,7 @@ Math_Log_d_d:
 Math_Arctan_d_d:
     ; xmm0 = arctan[xxm1, xmm0]
            push   rbx
-            sub   rsp, 32       
+            sub   rsp, 32
           fwait
          fnstcw   word[rsp+0x1C]     ; save precision
           fwait
@@ -116,6 +116,29 @@ Math_Arctan_d_d:
             add   rsp, 32
             pop   rbx
             ret
+
+    divxxm:
+        ; xmm0 = arctan[xxm1, xmm0]
+               push   rbx
+                sub   rsp, 32
+              fwait
+             fnstcw   word[rsp+0x1C]     ; save precision
+              fwait
+             fnstcw   word[rsp+0x1E]
+                and   word[rsp+0x1E], 0xF3FF     ; round nearest
+                 or   word[rsp+0x1E], 0x0300     ; 80 bit precision
+              fldcw   word[rsp+0x1E]
+            _vmovsd   qword[rsp+8H], xmm1
+                fld   qword[rsp+8H]
+            _vmovsd   qword[rsp+8H], xmm0
+                fld   qword[rsp+8H]
+               fdiv
+               fstp   qword[rsp+8H]
+              fldcw   word[rsp+0x1C]     ; restore precision
+            _vmovsd   xmm0, qword[rsp+8H]
+                add   rsp, 32
+                pop   rbx
+                ret
 
 Math_Round_d_d:
   ; xmm0 = Round[xmm0]
@@ -193,7 +216,7 @@ Math_Power_d_dd:
     ; xmm0 = Power[xmm0, xmm1]
            push   rsi
            push   rbx
-            sub   rsp, 40            
+            sub   rsp, 40
           fwait
          fnstcw   word[rsp+0x1C]     ; save precision
           fwait
@@ -248,4 +271,3 @@ Math_Power_d_dd:
             pop   rbx
             pop   rsi
             ret
-

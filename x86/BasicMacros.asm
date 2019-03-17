@@ -386,3 +386,11 @@ macro _pext y, x, m, b, t, tm
 	      done:
     end  if
 end  macro
+
+macro xmmdiv x, y
+_vpxor  xmm0, xmm0, xmm0
+_vcvtsi2sd  xmm0, xmm0, eax
+_vcvtsi2sd  xmm1, xmm1, ecx
+_vdivsd  xmm0, xmm0, xmm1
+_vcvttsd2si  eax, xmm0
+end macro

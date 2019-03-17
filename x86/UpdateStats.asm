@@ -142,7 +142,17 @@ macro UpdateCaptureStats move, captures, captureCnt, bonusW, absbonus
             shl  ecx, 3
             add  ecx, eax
             lea  r8, [r9 + 4*rcx]
-    apply_bonus  r8, bonusW, absbonus, 324
+
+; apply_bonus  r8, bonusW, absbonus, 324
+;macro apply_bonus address, bonus32, absbonus, denominator
+		mov   eax, dword[r8]
+		mov   ecx, 324
+		imul  eax, absbonus
+		xmmdiv  eax, ecx
+		mov   ecx, bonusW
+		sub   ecx, eax
+		add   ecx, dword[r8]
+		mov   dword[r8], ecx
 
   match =0, quiets
   else
@@ -166,6 +176,21 @@ NextCapture:
             add  ecx, eax
             lea  r8, [r9 + 4*rcx]
     apply_bonus  r8, bonusW, absbonus, 324
+    ; apply_bonus  r8, bonusW, absbonus, 324
+    ;macro apply_bonus address, bonus32, absbonus, denominator
+            mov   eax, dword[r8]
+    		;mov   rcx, qword[.constd_2p0]
+    		imul  eax, absbonus
+            _vpxor  xmm0, xmm0, xmm0
+            _vcvtsi2sd  xmm0, xmm0, eax
+            _vcvtsi2sd  xmm1, xmm1, qword[.constd_2p0]
+            call divxmm
+            _vdivsd  xmm0, xmm0, xmm1
+            _vcvttsd2si  eax, xmm0
+    		mov   ecx, bonusW
+    		sub   ecx, eax
+    		add   ecx, dword[r8]
+    		mov   dword[r8], ecx
             cmp  esi, captureCnt
              jb  NextCapture
   end match
@@ -173,6 +198,3 @@ NextCapture:
 BonusTooBig:
 Return:
 end macro
-
-
-

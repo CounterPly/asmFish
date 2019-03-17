@@ -99,7 +99,7 @@ Search_Init:
 .constd_1p0     dq 1.0
 .constd_1p78    dq 1.78
 .constd_2p0     dq 2.0
+.constd_324p0	dq 324.0
 
 ._CaptureOrPromotion_or  db  0,-1,-1, 0
 ._CaptureOrPromotion_and db -1,-1,-1, 0
-
