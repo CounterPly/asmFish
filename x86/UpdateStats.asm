@@ -9,19 +9,19 @@ macro UpdateCmStats ss, offset, bonus32, absbonus, t1
 		mov   t1, qword[ss-1*sizeof.State+State.counterMoves]
 		cmp   dword[ss-1*sizeof.State+State.currentMove], 1
 		 jl   over1
-	apply_bonus   (t1+4*(offset)), bonus32, absbonus, 936
+	apply_bonus2   (t1+4*(offset)), bonus32, absbonus;, 1024
 over1:
 
 		mov   t1, qword[ss-2*sizeof.State+State.counterMoves]
 		cmp   dword[ss-2*sizeof.State+State.currentMove], 1
 		 jl   over2
-	apply_bonus   (t1+4*(offset)), bonus32, absbonus, 936
+	apply_bonus2   (t1+4*(offset)), bonus32, absbonus;, 1024
 over2:
 
 		mov   t1, qword[ss-4*sizeof.State+State.counterMoves]
 		cmp   dword[ss-4*sizeof.State+State.currentMove], 1
 		 jl   over3
-	apply_bonus   (t1+4*(offset)), bonus32, absbonus, 936
+	apply_bonus2   (t1+4*(offset)), bonus32, absbonus;, 1024
 over3:
 end macro
 
@@ -173,6 +173,3 @@ NextCapture:
 BonusTooBig:
 Return:
 end macro
-
-
-
