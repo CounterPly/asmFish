@@ -10,41 +10,77 @@ macro abs_bonus bonus
 end macro
 
 macro history_update address, bonus, absbonus
+    push rdx
 		mov   eax, dword[address]
-	       imul   eax, absbonus
-		cdq
-		mov   ecx, MAIN_HISTORY_DENOM
-	       idiv   ecx
+	    imul   eax, absbonus
+        mov   ecx, eax ; save the product in ecx
+
+		;cdq
+		;mov   ecx, MAIN_HISTORY_DENOM
+	    ;idiv   ecx
+
+        mov     edx,  1645359713    ;# tmp163,
+        imul    edx                 ;# tmp163
+        sar     edx, 12             ;# tmp165,
+        mov     eax, ecx            ;# tmp166, saved product
+        sar     eax, 31             ;# tmp166,
+        sub     edx, eax            ;# result, tmp166
+
 		mov   ecx, bonus
-		sub   ecx, eax
+		sub   ecx, edx
 		add   ecx, dword[address]
 		mov   dword[address], ecx
+    pop rdx
 end macro
 
 
 macro apply_capture_bonus address, bonus, absbonus
+    push rdx
 		mov   eax, dword[address]
 	    imul  eax, absbonus
-        cdq
-		mov   ecx, CAPTURE_HISTORY_DENOM
-	    idiv  ecx
+        mov   ecx, eax ; save the product in ecx
+
+        ;cdq
+		;mov   ecx, CAPTURE_HISTORY_DENOM
+	    ;idiv  ecx
+
+        mov     edx, 1645359713   ;# tmp163,
+        imul    edx                 ;# tmp163
+        sar     edx, 12   ;# tmp165,
+        mov     eax, ecx            ;# tmp166, saved product
+        sar     eax, 31             ;# tmp166,
+        sub     edx, eax            ;# result, tmp166
+
 		mov   ecx, bonus
-		sub   ecx, eax
+		sub   ecx, edx
 		add   ecx, dword[address]
 		mov   dword[address], ecx
+    pop   rdx
 end macro
 
-
 macro cms_update address, bonus, absbonus
+    push rdx
 		mov   eax, dword[address]
 	    imul  eax, absbonus
-		cdq
-		mov   ecx, CMS_UPD_DENOM
-	    idiv  ecx
+        mov   ecx, eax ; save the product in ecx
+
+        ;cdq
+		;mov   ecx, CMS_UPD_DENOM
+	    ;idiv  ecx
+
+        mov     edx,  -1945583475   ;# tmp163,
+        imul    edx                 ;# tmp163
+        add     edx, ecx            ;# tmp164, saved product
+        sar     edx, 14   ;# tmp165,
+        mov     eax, ecx            ;# tmp166, saved product
+        sar     eax, 31             ;# tmp166,
+        sub     edx, eax            ;# result, tmp166
+
 		mov   ecx, bonus
-		sub   ecx, eax
+		sub   ecx, edx
 		add   ecx, dword[address]
 		mov   dword[address], ecx
+    pop rdx        
 end macro
 
 macro GetNextMove
