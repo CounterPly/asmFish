@@ -1,23 +1,50 @@
+macro abs_bonus bonus
+    ; result stored in eax
+    push rdx
+    mov edx, bonus
+    sar edx, 31
+    mov eax, edx
+    xor eax, bonus
+    sub eax, edx
+    pop rdx
+end macro
 
-macro apply_bonus address, bonus32, absbonus, denominator
+macro history_update address, bonus, absbonus
 		mov   eax, dword[address]
 	       imul   eax, absbonus
 		cdq
-		mov   ecx, denominator
+		mov   ecx, MAIN_HISTORY_DENOM
 	       idiv   ecx
-		mov   ecx, bonus32
-
-;SD_String 'v'
-;SD_Int rcx
-
+		mov   ecx, bonus
 		sub   ecx, eax
 		add   ecx, dword[address]
 		mov   dword[address], ecx
+end macro
 
-;SD_String 'u'
-;SD_Int rcx
-;SD_String "|"
 
+macro apply_capture_bonus address, bonus, absbonus
+		mov   eax, dword[address]
+	    imul  eax, absbonus
+        cdq
+		mov   ecx, CAPTURE_HISTORY_DENOM
+	    idiv  ecx
+		mov   ecx, bonus
+		sub   ecx, eax
+		add   ecx, dword[address]
+		mov   dword[address], ecx
+end macro
+
+
+macro cms_update address, bonus, absbonus
+		mov   eax, dword[address]
+	    imul  eax, absbonus
+		cdq
+		mov   ecx, CMS_UPD_DENOM
+	    idiv  ecx
+		mov   ecx, bonus
+		sub   ecx, eax
+		add   ecx, dword[address]
+		mov   dword[address], ecx
 end macro
 
 macro GetNextMove

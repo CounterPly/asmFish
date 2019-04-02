@@ -1513,10 +1513,14 @@ end if
 		jne   .20TTStore
 		cmp   byte[rbx+State.capturedPiece], 0
 		jne   .20TTStore
-		imul   r11d,	r10d, -32
-		cmp   r10d,	324
+		imul  r11d,	r10d, -BONUS_MULTIPLIER
+		cmp   r10d,	BONUS_MAX
 		jae   .20TTStore
+        	abs_bonus r11d ; => eax
+        	push r10
+        	mov r10, rax
 		UpdateCmStats   (rbx-1*sizeof.State), r15, r11d, r10d, r8
+        	pop r10
 		jmp   .20TTStore
 .20Mate:
 		mov   r14d, dword[.excludedMove]
@@ -1541,10 +1545,14 @@ end if
 	@@:
 		cmp   byte[rbx+State.capturedPiece], 0
 		jne   .20TTStore
-		imul   r11d,	r10d, 32
-		cmp   r10d,	324
+		imul   r11d,	r10d, BONUS_MULTIPLIER
+		cmp   r10d,	BONUS_MAX
 		jae   .20TTStore
-      UpdateCmStats   (rbx-1*sizeof.State),	r15, r11d, r10d, r8
+        	abs_bonus r11d ; => eax
+        	push r10
+        	mov r10, rax
+      		UpdateCmStats   (rbx-1*sizeof.State),	r15, r11d, r10d, r8
+        	pop r10
 .20TTStore:
     ; edi = bestValue
 		mov   r14d, dword[.excludedMove]
@@ -1659,10 +1667,14 @@ Display	2, "Search returning %i0%n"
 		jne   .Return
 		cmp   byte[rbx+State.capturedPiece], 0
 		jne   .Return
-	       imul   r11d,	r10d, -32
-		cmp   r10d,	324
+	       imul   r11d,	r10d, -BONUS_MULTIPLIER
+		cmp   r10d,	BONUS_MAX
 		jae   .Return
-  UpdateCmStats	  (rbx-1*sizeof.State),	r15, r11d, r10d, r8
+        	abs_bonus r11d ; => eax
+        	push r10
+        	mov r10, rax
+  		UpdateCmStats	  (rbx-1*sizeof.State),	r15, r11d, r10d, r8
+        	pop r10
 		mov   eax, edi
 		jmp   .Return
 .ReturnTTValue_Penalty:
@@ -1674,10 +1686,14 @@ Display	2, "Search returning %i0%n"
     ; r8 = offset in history table
 	       test   dl, dl
 		jnz   .Return
-	       imul   r11d,	r10d, -32
-		cmp   r10d,	324
+	       imul   r11d,	r10d, -BONUS_MULTIPLIER
+		cmp   r10d,	BONUS_MAX
 		jae   .Return
-	apply_bonus   r8, r11d,	r10d, 324
+        	abs_bonus r11d
+        	push r10
+        	mov r10, rax
+        	history_update r8, r11d, r10d
+        	pop r10
 		mov   r9d, r12d
 		and   r9d, 63
 		mov   eax, r12d
@@ -1687,7 +1703,11 @@ Display	2, "Search returning %i0%n"
 		shl   eax, 6
 		add   r9d, eax
     ; r9 = offset in cm table
-      UpdateCmStats   (rbx-0*sizeof.State),	r9, r11d, r10d,	r8
+        	abs_bonus r11d ; => eax
+        	push r10
+        	mov r10, rax
+      		UpdateCmStats   (rbx-0*sizeof.State),	r9, r11d, r10d,	r8
+        	pop r10
 		mov   eax, edi
 		jmp   .Return
   end if
