@@ -1195,54 +1195,81 @@ end if
 		jae   .StartStep17
     @1:
   end if
+
 		mov   r8l, byte[.captureOrPromotion]
 		mov   edi, dword[.reduction]
 		mov   ecx, 15
-	       test   r8l, r8l
-		 jz   .15NotCaptureOrPromotion
-		 mov  r9d, dword[rbx-2*sizeof.State+State.statScore] ; (ss-1)->statScore >= 0
-		shr  r9d, 31
-		add  edi, 1
-		sub  edi, r9d
-		lea   eax, [rdi	- 1]
+
+		test   r8l, r8l
+		 jz   .15LMRTests
+
 		cmp   byte[.moveCountPruning], 0
 		je   .StartStep17
-	       test   edi, edi
-	     cmovnz   edi, eax
-		jmp   .15ReadyToSearch
 
-.15NotCaptureOrPromotion:
-    ; r12d = from
-    ; r13d = to
-    ; r14d = from piece
-    ; r15d = to	piece
-    ; ecx = 15
 
+.15LMRTests:
+		cmp  byte[.captureOrPromotion], 0
+		je  .15NotCapOrProm
+
+ 		; mov  r9d, dword[rbx-2*sizeof.State+State.statScore]
+		; shr  r9d, 31
+		; add  edi, 1
+		; sub  edi, r9d
+		; lea  eax, [rdi - 1]
+		; test  edi, edi
+		; cmovnz  edi, eax
+		; mov  edi, 0
+		mov  r8d, 15
+		mov   ecx, dword[rbx - 2*sizeof.State + State.moveCount]
+		cmp   r8d, ecx
+		sbb  edi, 0
+		jmp  .15ReadyToSearch
+
+.15NotCapOrProm:
     ; Decrease reduction if opponent's move count is high
-		cmp   ecx, dword[rbx	- 2*sizeof.State + State.moveCount]
+		mov  r8d, 15
+		mov   ecx, dword[rbx - 2*sizeof.State + State.moveCount]
+		cmp   r8d, ecx
+		sbb  edi, 0
+
+@@:
   if PvNode = 1
-		sbb   edi, dword[.pvExact]
-  else
-		sbb   edi, 0
+		mov  ecx, dword[.pvExact]
+		test ecx, ecx
+		jz @f
+		sub  edi, 1
   end if
+
+@@:
     ; Increase reduction if ttMove is a	capture
-		add   edi, dword[.ttCapture]
+		mov  ecx, dword[.ttCapture]
+		test  ecx, ecx
+		jz  @f
+		add  edi, 1
+
+@@:
     ; Increase reduction for cut nodes
 		cmp   byte[.cutNode], 0
-		 jz   .15testA
+		 je   .15testA
+
 		add   edi, 2*ONE_PLY
 		jmp   .15skipA
+
 .15testA:
 		mov   ecx, dword[.move]
 		cmp   ecx, MOVE_TYPE_PROM shl 12
 		jae   .15skipA
+
 		mov   r9d, r12d
 		mov   r8d, r13d
 		xor   edx, edx
 	       call   SeeTestGe.HaveFromTo
+
 	       test   eax, eax
 		jnz   .15skipA
+
 		sub   edi, 2*ONE_PLY
+
 .15skipA:
 		mov   ecx, dword[.move]
 		and   ecx, 64*64-1
