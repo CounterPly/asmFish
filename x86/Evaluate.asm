@@ -570,7 +570,8 @@ SetTropism:
 
 		mov  rax, tropism
 		imul  rax, tropism
-		shr  eax, 2
+		lea  eax, [rax+4*rax]
+		shr  eax, 4
 		add  kingDanger, eax
 
 	; the following	does edi += - 9*mg_value(score)/8 + 40
