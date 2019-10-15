@@ -22,7 +22,7 @@ szUciResponse:
 szGreeting:
 	db VERSION_PRE
 	db VERSION_OS
-	db '_'
+	db 'CP_'
 	BuildTimeData
 	db '_'
 	db VERSION_POST
@@ -1551,4 +1551,3 @@ _LC17:
         db "info string Found %d tablebases.", 10, 0
 
 end if
-

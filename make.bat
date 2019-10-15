@@ -120,8 +120,8 @@ cd ..
 set include=arm\include\
 CALL:start_timer
 ECHO === Building ARM Executables ===
-fasmg.exe "arm\fish.arm" "armFishL_%datestamp%_v8" -e 1000 -i "VERSION_OS='L'" -i "PEDANTIC = 1" -i "VERSION_POST = 'v8'" %debug%
-copy armFishL_%datestamp%_v8 LinuxOS_binaries
+fasmg.exe "arm\fish.arm" "armFishLCP_%datestamp%_v8" -e 1000 -i "VERSION_OS='L'" -i "PEDANTIC = 1" -i "VERSION_POST = 'v8'" %debug%
+copy armFishLCP_%datestamp%_v8 LinuxOS_binaries
 echo.
 CALL:stop_timer
 echo.
@@ -189,11 +189,11 @@ start /min /wait fasmg.exe "x86\fish.asm" "mateFishL_%datestamp%_popcnt" -e 1000
 start /min /wait fasmg.exe "x86\fish.asm" "mateFishL_%datestamp%_bmi1" -e 1000 -i "VERSION_OS='L'" -i "VERSION_POST = 'bmi1'" -i "USE_MATEFINDER = 1" %debug%
 start /min /wait fasmg.exe "x86\fish.asm" "mateFishL_%datestamp%_bmi2" -e 1000 -i "VERSION_OS='L'" -i "VERSION_POST = 'bmi2'" -i "USE_MATEFINDER = 1" %debug%
 set include=arm\include\
-start /min /wait fasmg.exe "arm\fish.arm" "mateFishL_%datestamp%_v8" -e 1000 -i "VERSION_OS='L'" -i "VERSION_POST = 'v8'" -i "USE_MATEFINDER = 1" %debug%
+start /min /wait fasmg.exe "arm\fish.arm" "mateFishLCP_%datestamp%_v8" -e 1000 -i "VERSION_OS='L'" -i "VERSION_POST = 'v8'" -i "USE_MATEFINDER = 1" %debug%
 copy mateFishL_%datestamp%_popcnt Matefinder_binaries
 copy mateFishL_%datestamp%_bmi1 Matefinder_binaries
 copy mateFishL_%datestamp%_bmi2 Matefinder_binaries
-copy mateFishL_%datestamp%_v8 Matefinder_binaries
+copy mateFishLCP_%datestamp%_v8 Matefinder_binaries
 echo.
 :: Mac
 set include=x86\include\
@@ -255,7 +255,7 @@ if exist arm* del arm*
 cd ..
 set include=arm\include\
 ECHO === Building ARM Executables ===
-start /min fasmg.exe "arm\fish.arm" "armFishL_%datestamp%_v8" -e 1000 -i "VERSION_OS='L'" -i "PEDANTIC = 1" -i "VERSION_POST = 'v8'" %debug%
+start /min fasmg.exe "arm\fish.arm" "armFishLCP_%datestamp%_v8" -e 1000 -i "VERSION_OS='L'" -i "PEDANTIC = 1" -i "VERSION_POST = 'v8'" %debug%
 echo.
 
  
@@ -286,7 +286,7 @@ start /min fasmg.exe "x86\fish.asm" "mateFishL_%datestamp%_bmi1" -e 1000 -i "VER
 start /min fasmg.exe "x86\fish.asm" "mateFishL_%datestamp%_bmi2" -e 1000 -i "VERSION_OS='L'" -i "VERSION_POST = 'bmi2'" -i "USE_MATEFINDER = 1" %debug%
 
 set include=arm\include\
-start /min fasmg.exe "arm\fish.arm" "mateFishL_%datestamp%_v8" -e 1000 -i "VERSION_OS='L'" -i "VERSION_POST = 'v8'" -i "USE_MATEFINDER = 1" %debug%
+start /min fasmg.exe "arm\fish.arm" "mateFishLCP_%datestamp%_v8" -e 1000 -i "VERSION_OS='L'" -i "VERSION_POST = 'v8'" -i "USE_MATEFINDER = 1" %debug%
 echo.
 
 :: Mac

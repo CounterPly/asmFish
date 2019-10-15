@@ -504,6 +504,8 @@ Display 2, "Search(alpha=%i1, beta=%i2, depth=%i8, cutNode=%i9) called%n"
             mov  w27, w0
         ; w27 = nullValue
                 add  x7, x20, -Thread.rootPos
+                ldr  w4, [x7, Thread.nmp_ply]
+               cbnz  w4, .Return
                 mov  w4, VALUE_KNOWN_WIN-1
                 add  w1, w2, w4
                 cmp  w1, w4, lsl 1
@@ -511,10 +513,7 @@ Display 2, "Search(alpha=%i1, beta=%i2, depth=%i8, cutNode=%i9) called%n"
                 ldr  w1, [sp, .depth]
                 cmp  w1, 12*ONE_PLY
                 blt  .Return
-                ldr  w4, [x7, Thread.nmp_ply]
-               cbnz  w4, .Return
 .8check:
-                add  x7, x20, -Thread.rootPos
                 add  w0, w26, w26, lsl 1
                 add  w8, w0, 3
                 tst  w26, w26
@@ -1491,10 +1490,7 @@ Display 2, "Search(alpha=%i1, beta=%i2, depth=%i8, cutNode=%i9) called%n"
               b  .18NoNewBestValue
   end if
 .18fail_high:
-            ldr  w0, [x21, State.statScore]
-            cmp  w0, 0
-            csel w0, w0, wzr, ge
-            str  w0, [x21, State.statScore]
+            str  wzr, [x21, State.statScore]
             b  .MovePickDone
         @1:
             str x0, [x21, + State.statScore]
