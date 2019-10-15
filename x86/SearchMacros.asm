@@ -722,8 +722,11 @@ end if
 		mov  eax, r12d
 		cmp  dword[.excludedMove], r12d
 		je   .9moveloop
+		cmp  byte[.cutNode], 0
+		setne  sil
+		lea  esi, dword[2*rsi+2]
 
-		cmp    dword[.probCutCount], 3
+		cmp    dword[.probCutCount], esi
 		jge   .9moveloop_done
 		add    dword[.probCutCount], 1
 		mov   ecx, r12d
