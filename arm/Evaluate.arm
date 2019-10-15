@@ -954,12 +954,6 @@ macro ShelterStorm Us
 
     ; esi = ourRank+1
 
-            cmp  w27, 0
-            bne  @1f
-            cmp  w8, 0
-            beq  @f
-
-; if (ourRank || theirRank)
             cmp  w4, 0
             bne  @1f
             cmp  w8, 0
@@ -1927,14 +1921,8 @@ Evaluate.HaveScaleFunctionReturn:
             beq  Evaluate.NotOppBishop
             orr  x8, x8, x9
            cbnz  x8, Evaluate.NotOppBishop
-            sub  x1, x19, 1
-            and  x1, x1, x19
             mov  w0, 46
-            tst  x1, x1
-          csetm  w1, ne
-            mov  w4, 31 - 9
-            and  w1, w1, w4
-            add  w1, w1, 9
+            mov  w1, 31
           mov32  w4, (BishopValueMg shl 16) + BishopValueMg
             cmp  w27, w4
            csel  w0, w1, w0, eq
