@@ -33,7 +33,7 @@ end virtual
         mov   qword[.timeReduction], rax
 
 	; clear the search stack
-		lea   rdx, [rbx-5*sizeof.State]
+		lea   rdx, [rbx-7*sizeof.State]
 		lea   r8, [rbx+3*sizeof.State]
 		mov   r9d, CmhDeadOffset
 		add   r9, qword[rbp+Pos.counterMoveHistory]

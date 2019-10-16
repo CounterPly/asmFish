@@ -1,7 +1,7 @@
 
 macro UpdateCmStats ss, offset, weightedbonus, absbonus, t1
 	; clobbers rax, rcx, rdx, t1
-		local over1, over2, over3
+		local over1, over2, over3, over4
 		Assert   b, absbonus, BONUS_MAX, 'assertion abs(bonus)<BONUS_MAX failed in UpdateCmStats'
 
 		mov   t1, qword[ss-1*sizeof.State+State.counterMoves]
@@ -25,6 +25,13 @@ over2:
 		cms_update   (t1+4*(offset)), weightedbonus, absbonus
 
 over3:
+		mov   t1, qword[ss-6*sizeof.State+State.counterMoves]
+		cmp   dword[ss-6*sizeof.State+State.currentMove], 1
+		jl   over4
+
+		cms_update   (t1+4*(offset)), weightedbonus, absbonus
+
+over4:
 end macro
 
 macro UpdateStats move, quiets, quietsCnt, weightedbonus, absbonus, prevOffset
